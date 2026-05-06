@@ -4,7 +4,14 @@
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 
-#include "linmath.h"
+//#include "linmath.h"      // Another math library we aren't using
+#include <glm/glm.hpp>
+#include <glm/vec3.hpp> // glm::vec3
+#include <glm/vec4.hpp> // glm::vec4
+#include <glm/mat4x4.hpp> // glm::mat4
+#include <glm/gtc/matrix_transform.hpp>
+// glm::translate, glm::rotate, glm::scale, glm::perspective
+#include <glm/gtc/type_ptr.hpp> // glm::value_ptr
 
 #include <stdlib.h>
 #include <stddef.h>
@@ -12,8 +19,8 @@
 
 typedef struct Vertex
 {
-    vec2 pos;
-    vec3 col;
+    glm::vec2 pos;      // vec2 pos;
+    glm::vec3 col;      // vec3 col;
 } Vertex;
 
 static const Vertex vertices[3] =
@@ -76,7 +83,8 @@ int main(void)
     glfwSetKeyCallback(window, key_callback);
 
     glfwMakeContextCurrent(window);
-    gladLoadGL(glfwGetProcAddress);
+    //gladLoadGL(glfwGetProcAddress);
+    gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
     glfwSwapInterval(1);
 
     // NOTE: OpenGL error checks have been omitted for brevity
@@ -122,11 +130,40 @@ int main(void)
         glViewport(0, 0, width, height);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        mat4x4 m, p, mvp;
-        mat4x4_identity(m);
-        mat4x4_rotate_Z(m, m, (float)glfwGetTime());
-        mat4x4_ortho(p, -ratio, ratio, -1.f, 1.f, 1.f, -1.f);
-        mat4x4_mul(mvp, p, m);
+        glm::mat4 m;             //mat4x4 m, p, mvp;
+        glm::mat4 p;
+        glm::mat4 mvp;
+        //mat4x4_identity(m);
+        
+ //       mat4x4_rotate_Z(m, m, (float)glfwGetTime());
+        glm::mat4 rotateZ = glm::rotate( glm::mat4(1.0f), 
+                                         (float)glfwGetTime(),         // Angle
+                                         glm::vec3(0.0f, 0.0f, 1.0f));
+            
+
+ //       mat4x4_ortho(p, -ratio, ratio, -1.f, 1.f, 1.f, -1.f);
+ 
+        glm::vec3 eyePosition = glm::vec3( 0.0f, 0.0f, -1.0f );
+        glm::vec3 atPosition = glm::vec3( 0.0f, 0.0f, 0.0f );
+        glm::vec3 upAxis = glm::vec3( 0.0f, +1.0f, 0.0f );
+
+        // the "camera"
+        glm::mat4 matView = glm::lookAt(eyePosition, atPosition, upAxis);
+
+        // projection matrix
+        p = glm::perspective( 60.0f,        // FOV
+                              (float)width / (float)height, // Aspect ratio
+                              0.1f,            // Near plane
+                              1000.0f);         // Far plane
+                              
+
+ //       mat4x4_mul(mvp, p, m);
+        m = glm::mat4(1.0f);        // Identity matrix
+        // combine the rotation
+        m = rotateZ * m;
+        
+        //mvp  -- pvm
+        mvp = p * matView * m;
 
         glUseProgram(program);
         glUniformMatrix4fv(mvp_location, 1, GL_FALSE, (const GLfloat*)&mvp);

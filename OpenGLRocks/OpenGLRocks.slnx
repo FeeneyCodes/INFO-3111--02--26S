@@ -3,5 +3,5 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
-  <Project Path="OpenGLRocks/OpenGLRocks.vcxproj" />
+  <Project Path="OpenGLRocks/OpenGLRocks.vcxproj" Id="b1848984-8465-4c5c-aeb8-9926481570e9" />
 </Solution>
