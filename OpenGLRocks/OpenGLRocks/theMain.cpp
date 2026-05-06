@@ -23,11 +23,11 @@ typedef struct Vertex
     glm::vec3 col;      // vec3 col;
 } Vertex;
 
-static const Vertex vertices[3] =
+static const Vertex vertices[6] =
 {
-    { { -0.6f, -0.4f }, { 1.f, 0.f, 0.f } },
-    { {  0.6f, -0.4f }, { 0.f, 1.f, 0.f } },
-    { {   0.f,  0.6f }, { 0.f, 0.f, 1.f } }
+    { { -1.6f, -0.4f }, { 1.0f, 0.0f, 0.0f } },
+    { {  0.6f, -0.4f }, { 0.0f, 1.0f, 0.0f } },
+    { {  0.0f,  0.6f }, { 0.0f, 0.0f, 1.0f } }
 };
 
 static const char* vertex_shader_text =
@@ -61,6 +61,8 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         glfwSetWindowShouldClose(window, GLFW_TRUE);
 }
+
+float eyeZValue = -1.0f;
 
 int main(void)
 {
@@ -143,9 +145,11 @@ int main(void)
 
  //       mat4x4_ortho(p, -ratio, ratio, -1.f, 1.f, 1.f, -1.f);
  
-        glm::vec3 eyePosition = glm::vec3( 0.0f, 0.0f, -1.0f );
+        glm::vec3 eyePosition = glm::vec3( 0.0f, 0.0f, eyeZValue);
         glm::vec3 atPosition = glm::vec3( 0.0f, 0.0f, 0.0f );
         glm::vec3 upAxis = glm::vec3( 0.0f, +1.0f, 0.0f );
+
+ //       eyeZValue += 0.005f;
 
         // the "camera"
         glm::mat4 matView = glm::lookAt(eyePosition, atPosition, upAxis);
