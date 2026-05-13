@@ -17,28 +17,33 @@
 #include <stddef.h>
 #include <stdio.h>
 
-typedef struct Vertex
+struct Vertex
 {
-    glm::vec2 pos;      // vec2 pos;
-    glm::vec3 col;      // vec3 col;
-} Vertex;
-
-static const Vertex vertices[6] =
-{
-    { { -1.6f, -0.4f }, { 1.0f, 0.0f, 0.0f } },
-    { {  0.6f, -0.4f }, { 0.0f, 1.0f, 0.0f } },
-    { {  0.0f,  0.6f }, { 0.0f, 0.0f, 1.0f } }
+    glm::vec3 position;      // vec2 pos;  x, y
+    glm::vec3 colour;       // 0.0 - 1.0   0-255
 };
 
+Vertex vertices[3] =
+{
+    //     X      Y     Z         R    G     B
+    { { -0.6f, -0.4f, 0.0f }, { 1.0f, 0.0f, 0.0f } },
+    { {  0.6f, -0.4f, 0.0f }, { 0.0f, 1.0f, 0.0f } },
+    { {  0.0f,  0.6f, 0.0f }, { 0.0f, 0.0f, 1.0f } },
+};
+
+glm::vec3 eyePosition = glm::vec3(0.0f, 0.0f, -4.0f);
+glm::vec3 atPosition = glm::vec3(0.0f, 0.0f, 0.0f);
+glm::vec3 upAxis = glm::vec3(0.0f, +1.0f, 0.0f);
+
 static const char* vertex_shader_text =
-"#version 330\n"
+"#version 330\n"    
 "uniform mat4 MVP;\n"
 "in vec3 vCol;\n"
-"in vec2 vPos;\n"
+"in vec3 vPos;\n"
 "out vec3 color;\n"
 "void main()\n"
 "{\n"
-"    gl_Position = MVP * vec4(vPos, 0.0, 1.0);\n"
+"    gl_Position = MVP * vec4(vPos, 1.0);\n"
 "    color = vCol;\n"
 "}\n";
 
@@ -54,15 +59,52 @@ static const char* fragment_shader_text =
 static void error_callback(int error, const char* description)
 {
     fprintf(stderr, "Error: %s\n", description);
+
+    return;
 }
 
-static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+static void key_callback(GLFWwindow* window, 
+                         int key, 
+                         int scancode, 
+                         int action, 
+                         int mods)
 {
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+    {
         glfwSetWindowShouldClose(window, GLFW_TRUE);
+    }
+
+    const float CAMERASPEED = 0.01f;
+    // Camera 
+    if (key == GLFW_KEY_W)          // Forward (along Z axis)
+    {
+        eyePosition.z += CAMERASPEED;
+    }
+    if (key == GLFW_KEY_S)          // Backwards
+    {
+        eyePosition.z -= CAMERASPEED;
+    }
+    if (key == GLFW_KEY_A)          // Left (along X axis)
+    {
+        eyePosition.x -= CAMERASPEED;
+    }
+    if (key == GLFW_KEY_D)          // Right
+    {
+        eyePosition.x += CAMERASPEED;
+    }
+    // Up and down
+    if (key == GLFW_KEY_Q)      // Up (along Y axis)
+    {
+        eyePosition.y += CAMERASPEED;
+    }
+    if (key == GLFW_KEY_E)      // Down?
+    {
+        eyePosition.y -= CAMERASPEED;
+    }
+
+    return;
 }
 
-float eyeZValue = -1.0f;
 
 int main(void)
 {
@@ -75,7 +117,7 @@ int main(void)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    GLFWwindow* window = glfwCreateWindow(640, 480, "OpenGL Triangle", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(1080, 760, "OpenGL Triangle", NULL, NULL);
     if (!window)
     {
         glfwTerminate();
@@ -110,18 +152,30 @@ int main(void)
     glLinkProgram(program);
 
     const GLint mvp_location = glGetUniformLocation(program, "MVP");
-    const GLint vpos_location = glGetAttribLocation(program, "vPos");
-    const GLint vcol_location = glGetAttribLocation(program, "vCol");
+
 
     GLuint vertex_array;
     glGenVertexArrays(1, &vertex_array);
     glBindVertexArray(vertex_array);
+    
+    // In the shader, where is the "vPos" variable?
+    const GLint vpos_location = glGetAttribLocation(program, "vPos");
     glEnableVertexAttribArray(vpos_location);
-    glVertexAttribPointer(vpos_location, 2, GL_FLOAT, GL_FALSE,
-        sizeof(Vertex), (void*)offsetof(Vertex, pos));
+    glVertexAttribPointer( vpos_location, 
+                           3,                       // vec2  --> vec3
+                           GL_FLOAT, 
+                           GL_FALSE,                // "Normalized"
+                           sizeof(Vertex),          // number of bytes
+                           (void*)offsetof(Vertex, position));
+
+    const GLint vcol_location = glGetAttribLocation(program, "vCol");
     glEnableVertexAttribArray(vcol_location);
-    glVertexAttribPointer(vcol_location, 3, GL_FLOAT, GL_FALSE,
-        sizeof(Vertex), (void*)offsetof(Vertex, col));
+    glVertexAttribPointer( vcol_location, 
+                           3, 
+                           GL_FLOAT, 
+                           GL_FALSE,
+                           sizeof(Vertex), 
+                           (void*)offsetof(Vertex, colour));
 
     while (!glfwWindowShouldClose(window))
     {
@@ -139,15 +193,15 @@ int main(void)
         
  //       mat4x4_rotate_Z(m, m, (float)glfwGetTime());
         glm::mat4 rotateZ = glm::rotate( glm::mat4(1.0f), 
-                                         (float)glfwGetTime(),         // Angle
+                                         0.0f, // (float)glfwGetTime(),         // Angle
                                          glm::vec3(0.0f, 0.0f, 1.0f));
             
 
  //       mat4x4_ortho(p, -ratio, ratio, -1.f, 1.f, 1.f, -1.f);
  
-        glm::vec3 eyePosition = glm::vec3( 0.0f, 0.0f, eyeZValue);
-        glm::vec3 atPosition = glm::vec3( 0.0f, 0.0f, 0.0f );
-        glm::vec3 upAxis = glm::vec3( 0.0f, +1.0f, 0.0f );
+        //glm::vec3 eyePosition = glm::vec3( 0.0f, 0.0f, eyeZValue);
+        //glm::vec3 atPosition = glm::vec3( 0.0f, 0.0f, 0.0f );
+        //glm::vec3 upAxis = glm::vec3( 0.0f, +1.0f, 0.0f );
 
  //       eyeZValue += 0.005f;
 
@@ -169,9 +223,15 @@ int main(void)
         //mvp  -- pvm
         mvp = p * matView * m;
 
+        //glPointSize(6.0f);
+        //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
         glUseProgram(program);
+
         glUniformMatrix4fv(mvp_location, 1, GL_FALSE, (const GLfloat*)&mvp);
+
         glBindVertexArray(vertex_array);
+
         glDrawArrays(GL_TRIANGLES, 0, 3);
 
         glfwSwapBuffers(window);
