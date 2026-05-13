@@ -1,8 +1,9 @@
-#define GLAD_GL_IMPLEMENTATION
-#include <glad/glad.h>
-//#include "include/glad/glad.h"
-#define GLFW_INCLUDE_NONE
-#include <GLFW/glfw3.h>
+//#define GLAD_GL_IMPLEMENTATION
+//#include <glad/glad.h>
+////#include "include/glad/glad.h"
+//#define GLFW_INCLUDE_NONE
+//#include <GLFW/glfw3.h>
+#include "globalOpenGLStuff.h"
 
 //#include "linmath.h"      // Another math library we aren't using
 #include <glm/glm.hpp>
@@ -16,6 +17,13 @@
 #include <stdlib.h>
 #include <stddef.h>
 #include <stdio.h>
+#include <iostream>
+#include <fstream>
+#include <string>
+
+#include "cShaderManager/cShaderManager.h"
+
+cShaderManager* g_pShaderManager = NULL;
 
 struct Vertex
 {
@@ -23,38 +31,42 @@ struct Vertex
     glm::vec3 colour;       // 0.0 - 1.0   0-255
 };
 
-Vertex vertices[3] =
-{
-    //     X      Y     Z         R    G     B
-    { { -0.6f, -0.4f, 0.0f }, { 1.0f, 0.0f, 0.0f } },
-    { {  0.6f, -0.4f, 0.0f }, { 0.0f, 1.0f, 0.0f } },
-    { {  0.0f,  0.6f, 0.0f }, { 0.0f, 0.0f, 1.0f } },
-};
+Vertex* g_Vertices = NULL;
+unsigned long g_NumberOfVertices = 0;
+
+//Vertex vertices[3] =
+//{
+//    //     X      Y     Z         R    G     B
+//    { { -0.6f, -0.4f, 0.0f }, { 1.0f, 0.0f, 0.0f } },
+//    { {  0.6f, -0.4f, 0.0f }, { 0.0f, 1.0f, 0.0f } },
+//    { {  0.0f,  0.6f, 0.0f }, { 0.0f, 0.0f, 1.0f } },
+//};
+
 
 glm::vec3 eyePosition = glm::vec3(0.0f, 0.0f, -4.0f);
 glm::vec3 atPosition = glm::vec3(0.0f, 0.0f, 0.0f);
 glm::vec3 upAxis = glm::vec3(0.0f, +1.0f, 0.0f);
 
-static const char* vertex_shader_text =
-"#version 330\n"    
-"uniform mat4 MVP;\n"
-"in vec3 vCol;\n"
-"in vec3 vPos;\n"
-"out vec3 color;\n"
-"void main()\n"
-"{\n"
-"    gl_Position = MVP * vec4(vPos, 1.0);\n"
-"    color = vCol;\n"
-"}\n";
-
-static const char* fragment_shader_text =
-"#version 330\n"
-"in vec3 color;\n"
-"out vec4 fragment;\n"
-"void main()\n"
-"{\n"
-"    fragment = vec4(color, 1.0);\n"
-"}\n";
+//static const char* vertex_shader_text =
+//"#version 330\n"    
+//"uniform mat4 MVP;\n"
+//"in vec3 vCol;\n"
+//"in vec3 vPos;\n"
+//"out vec3 color;\n"
+//"void main()\n"
+//"{\n"
+//"    gl_Position = MVP * vec4(vPos, 1.0);\n"
+//"    color = vCol;\n"
+//"}\n";
+//
+//static const char* fragment_shader_text =
+//"#version 330\n"
+//"in vec3 color;\n"
+//"out vec4 fragment;\n"
+//"void main()\n"
+//"{\n"
+//"    fragment = vec4(color, 1.0);\n"
+//"}\n";
 
 static void error_callback(int error, const char* description)
 {
@@ -106,6 +118,82 @@ static void key_callback(GLFWwindow* window,
 }
 
 
+bool LoadModelFromFile(std::string fileName)
+{
+    std::ifstream theFile(fileName);
+
+    if (!theFile.is_open())
+    {
+        return false;
+    }
+
+    // Read until I hit "vertex"
+    std::string aToken;
+    while (theFile >> aToken)
+    {
+        if (aToken == "vertex")
+        {
+            break;
+        }
+    }
+    //unsigned long numberOfVertices = 0;
+    theFile >> ::g_NumberOfVertices;
+
+
+    // Read until I hit "face"
+    while (theFile >> aToken)
+    {
+        if (aToken == "face")
+        {
+            break;
+        }
+    }
+    unsigned long numberOfTriangles = 0;
+    theFile >> numberOfTriangles;
+
+    // Read until I hit "end_header"
+    while (theFile >> aToken)
+    {
+        if (aToken == "end_header")
+        {
+            break;
+        }
+    }
+    // Now the list of vertices
+    // Create a run time array in c ("C style array")
+    //Vertex* vertices = new Vertex[numberOfVertices];
+    ::g_Vertices = new Vertex[::g_NumberOfVertices];
+
+    for (unsigned long index = 0; index != ::g_NumberOfVertices; index++)
+    {
+        // -0.113944 0.168176 -0.404122 0.811943 0.485765 0.323699 
+        theFile >> ::g_Vertices[index].position.x;
+        theFile >> ::g_Vertices[index].position.y;
+        theFile >> ::g_Vertices[index].position.z;
+
+        float discard = 0.0f;
+        theFile >> discard;
+        theFile >> discard;
+        theFile >> discard;
+
+        ::g_Vertices[index].colour.r = 1.0f;
+        ::g_Vertices[index].colour.g = 1.0f;
+        ::g_Vertices[index].colour.b = 1.0f;
+    }
+
+
+ //   Vertex* vertices = new Vertex[3];
+ //   
+ //   vertices[0].position.x = -0.6f, -0.4f, 0.0f }, { 1.0f, 0.0f, 0.0f };
+    //    { {  0.6f, -0.4f, 0.0f }, { 0.0f, 1.0f, 0.0f } },
+    //    { {  0.0f,  0.6f, 0.0f }, { 0.0f, 0.0f, 1.0f } },
+    //};
+
+
+    return true;
+}
+
+
 int main(void)
 {
     glfwSetErrorCallback(error_callback);
@@ -133,23 +221,63 @@ int main(void)
 
     // NOTE: OpenGL error checks have been omitted for brevity
 
+    if ( ! LoadModelFromFile("assets//models//mig29.ply") )
+    {
+        std::cout << "File didn't load" << std::endl;
+        return -1;
+    }
+
+
     GLuint vertex_buffer;
     glGenBuffers(1, &vertex_buffer);
     glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-    const GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertex_shader, 1, &vertex_shader_text, NULL);
-    glCompileShader(vertex_shader);
+    GLsizeiptr sizeOfVertexArrayInByes
+                     = ::g_NumberOfVertices * sizeof(Vertex);
 
-    const GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragment_shader, 1, &fragment_shader_text, NULL);
-    glCompileShader(fragment_shader);
+    glBufferData( GL_ARRAY_BUFFER, 
+                  sizeOfVertexArrayInByes,
+                  (void*)::g_Vertices, 
+                  GL_STATIC_DRAW);
 
-    const GLuint program = glCreateProgram();
-    glAttachShader(program, vertex_shader);
-    glAttachShader(program, fragment_shader);
-    glLinkProgram(program);
+
+    // cShaderManager* g_pShaderManager = NULL;
+    ::g_pShaderManager = new cShaderManager();
+
+    cShaderManager::cShader vertexShader;
+    vertexShader.fileName = "simpleVertex.glsl";
+
+    cShaderManager::cShader fragmentShader;
+    fragmentShader.fileName = "simpleFragment.glsl";
+
+    ::g_pShaderManager->setBasePath("assets//shaders//");
+
+    if ( ! ::g_pShaderManager->createProgramFromFile( "BasicShader",
+                                                      vertexShader,
+                                                      fragmentShader))
+    {
+        std::cout << "Oh no! All is lost!." << std::endl;
+        std::cout << ::g_pShaderManager->getLastError() << std::endl;
+        return -1;
+    }
+    std::cout << "Shaders compiled OK." << std::endl;
+
+
+
+    //const GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
+    //glShaderSource(vertex_shader, 1, &vertex_shader_text, NULL);
+    //glCompileShader(vertex_shader);
+
+    //const GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
+    //glShaderSource(fragment_shader, 1, &fragment_shader_text, NULL);
+    //glCompileShader(fragment_shader);
+
+    //const GLuint program = glCreateProgram();
+    //glAttachShader(program, vertex_shader);
+    //glAttachShader(program, fragment_shader);
+    //glLinkProgram(program);
+
+    GLuint program = ::g_pShaderManager->getIDFromFriendlyName("BasicShader");
 
     const GLint mvp_location = glGetUniformLocation(program, "MVP");
 
@@ -232,11 +360,15 @@ int main(void)
 
         glBindVertexArray(vertex_array);
 
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        //glDrawArrays(GL_TRIANGLES, 0, 3);
+        glDrawArrays(GL_TRIANGLES, 0, ::g_NumberOfVertices);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
+
+    // Clean things up
+    delete ::g_pShaderManager;
 
     glfwDestroyWindow(window);
 
