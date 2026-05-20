@@ -20,10 +20,13 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <vector>
 
 #include "cShaderManager/cShaderManager.h"
+#include "cVAOManager/cVAOManager.h"
 
 cShaderManager* g_pShaderManager = NULL;
+cVAOManager* g_pVAOManager = NULL;
 
 struct Vertex
 {
@@ -31,10 +34,14 @@ struct Vertex
     glm::vec3 colour;       // 0.0 - 1.0   0-255
 };
 
-Vertex* g_Vertices = NULL;
-unsigned long g_NumberOfVertices = 0;
+Vertex* g_VerticesToDraw = NULL;
+unsigned long g_NumberOfVerticesToDraw = 0;
+// Nubmer of vertices and faces in the file
 
-//Vertex vertices[3] =
+//std::vector<Vertex> g_vecVertices;
+
+// Where is this array and when is it allocated??
+//Vertex vertices[30000];
 //{
 //    //     X      Y     Z         R    G     B
 //    { { -0.6f, -0.4f, 0.0f }, { 1.0f, 0.0f, 0.0f } },
@@ -43,7 +50,9 @@ unsigned long g_NumberOfVertices = 0;
 //};
 
 
-glm::vec3 eyePosition = glm::vec3(0.0f, 0.0f, -4.0f);
+
+
+glm::vec3 eyePosition = glm::vec3(0.0f, 0.0f, -1.0f);
 glm::vec3 atPosition = glm::vec3(0.0f, 0.0f, 0.0f);
 glm::vec3 upAxis = glm::vec3(0.0f, +1.0f, 0.0f);
 
@@ -136,8 +145,8 @@ bool LoadModelFromFile(std::string fileName)
             break;
         }
     }
-    //unsigned long numberOfVertices = 0;
-    theFile >> ::g_NumberOfVertices;
+    unsigned long numberOfVerticesInTheFile = 0;
+    theFile >> numberOfVerticesInTheFile;
 
 
     // Read until I hit "face"
@@ -148,8 +157,8 @@ bool LoadModelFromFile(std::string fileName)
             break;
         }
     }
-    unsigned long numberOfTriangles = 0;
-    theFile >> numberOfTriangles;
+    unsigned long numberOfTrianglesInTheFile = 0;
+    theFile >> numberOfTrianglesInTheFile;
 
     // Read until I hit "end_header"
     while (theFile >> aToken)
@@ -161,24 +170,104 @@ bool LoadModelFromFile(std::string fileName)
     }
     // Now the list of vertices
     // Create a run time array in c ("C style array")
-    //Vertex* vertices = new Vertex[numberOfVertices];
-    ::g_Vertices = new Vertex[::g_NumberOfVertices];
+    // Vertex* vertices = new Vertex[numberOfVertices];
+    //::g_Vertices = new Vertex[::g_NumberOfVertices];
 
-    for (unsigned long index = 0; index != ::g_NumberOfVertices; index++)
+    // Make a copy of the vertices as they are in the file
+    Vertex* pVerticesInFile = new Vertex[numberOfVerticesInTheFile];
+
+    //element vertex 3014
+    //property float x
+    //property float y
+    //property float z
+    //property float nx
+    //property float ny
+    //property float nz
+
+    for (unsigned long index = 0; index != numberOfVerticesInTheFile; index++)
     {
         // -0.113944 0.168176 -0.404122 0.811943 0.485765 0.323699 
-        theFile >> ::g_Vertices[index].position.x;
-        theFile >> ::g_Vertices[index].position.y;
-        theFile >> ::g_Vertices[index].position.z;
+        theFile >> pVerticesInFile[index].position.x;
+        theFile >> pVerticesInFile[index].position.y;
+        theFile >> pVerticesInFile[index].position.z;
 
         float discard = 0.0f;
         theFile >> discard;
         theFile >> discard;
         theFile >> discard;
 
-        ::g_Vertices[index].colour.r = 1.0f;
-        ::g_Vertices[index].colour.g = 1.0f;
-        ::g_Vertices[index].colour.b = 1.0f;
+        pVerticesInFile[index].colour.r = 1.0f;
+        pVerticesInFile[index].colour.g = 1.0f;
+        pVerticesInFile[index].colour.b = 1.0f;
+
+        // HACK:
+        //g_vecVertices.push_back(::g_Vertices[index]);
+
+    }
+
+    // Now I read the triangles (aka "faces")
+
+
+
+    struct cTriangle
+    {
+        unsigned long vertex_0;
+        unsigned long vertex_1;
+        unsigned long vertex_2;
+    };
+    cTriangle* pTriangles = new cTriangle[numberOfTrianglesInTheFile];
+
+    // and load them...
+    for (unsigned int index = 0; index != numberOfTrianglesInTheFile; index++)
+    {
+        // 3 5 14 21 
+        int discard = 0;
+        theFile >> discard;         // 3
+        theFile >> pTriangles[index].vertex_0;
+        theFile >> pTriangles[index].vertex_1;
+        theFile >> pTriangles[index].vertex_2;
+    }
+
+    // Make the thing that OpenGL wants
+    // Now many actual vertices are being drawn.
+    // Number of triangles * number of vertices per triangle
+
+    ::g_NumberOfVerticesToDraw = numberOfTrianglesInTheFile * 3;
+
+    //Vertex* g_VerticesToDraw = NULL;
+    ::g_VerticesToDraw = new Vertex[::g_NumberOfVerticesToDraw];
+
+    // Go through the triangles 
+    // Look up each vertex that corresponds to that triangle's vertex
+    // Load THAT vertex into the final array
+    unsigned int vertIndex = 0;
+    for (unsigned int triIndex = 0; triIndex != numberOfTrianglesInTheFile; triIndex++)
+    {
+        ::g_VerticesToDraw[vertIndex + 0].position.x 
+            = pVerticesInFile[ pTriangles[triIndex].vertex_0 ].position.x;
+        ::g_VerticesToDraw[vertIndex + 0].position.y 
+            = pVerticesInFile[ pTriangles[triIndex].vertex_0 ].position.y;
+        ::g_VerticesToDraw[vertIndex + 0].position.z 
+            = pVerticesInFile[ pTriangles[triIndex].vertex_0 ].position.z;
+
+
+        ::g_VerticesToDraw[vertIndex + 1].position.x 
+            = pVerticesInFile[ pTriangles[triIndex].vertex_1 ].position.x;
+        ::g_VerticesToDraw[vertIndex + 1].position.y 
+            = pVerticesInFile[ pTriangles[triIndex].vertex_1 ].position.y;
+        ::g_VerticesToDraw[vertIndex + 1].position.z 
+            = pVerticesInFile[ pTriangles[triIndex].vertex_1 ].position.z;
+
+        ::g_VerticesToDraw[vertIndex + 2].position 
+            = pVerticesInFile[ pTriangles[triIndex].vertex_2 ].position;
+
+        ::g_VerticesToDraw[vertIndex].colour = glm::vec3(1.0f);
+        ::g_VerticesToDraw[vertIndex + 1].colour = glm::vec3(1.0f);
+        ::g_VerticesToDraw[vertIndex + 2].colour = glm::vec3(1.0f);
+
+
+        // Increment the vertex index by 3 to get to the next set of 3 
+        vertIndex += 3;
     }
 
 
@@ -196,6 +285,12 @@ bool LoadModelFromFile(std::string fileName)
 
 int main(void)
 {
+
+    int myArray[100] = { 0 };   // STACK
+    int* pMyArray = new int[10000];   // HEAP
+
+    std::vector<int> myVector;
+
     glfwSetErrorCallback(error_callback);
 
     if (!glfwInit())
@@ -233,13 +328,17 @@ int main(void)
     glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
 
     GLsizeiptr sizeOfVertexArrayInByes
-                     = ::g_NumberOfVertices * sizeof(Vertex);
+                     = ::g_NumberOfVerticesToDraw * sizeof(Vertex);
 
     glBufferData( GL_ARRAY_BUFFER, 
                   sizeOfVertexArrayInByes,
-                  (void*)::g_Vertices, 
+                  (void*)::g_VerticesToDraw,
                   GL_STATIC_DRAW);
 
+    //glBufferData( GL_ARRAY_BUFFER, 
+    //              sizeOfVertexArrayInByes,
+    //              (void*)(g_vecVertices.data()),
+    //              GL_STATIC_DRAW);
 
     // cShaderManager* g_pShaderManager = NULL;
     ::g_pShaderManager = new cShaderManager();
@@ -262,6 +361,20 @@ int main(void)
     }
     std::cout << "Shaders compiled OK." << std::endl;
 
+    GLuint program = ::g_pShaderManager->getIDFromFriendlyName("BasicShader");
+
+    // The VAO manager (to load the models)
+    ::g_pVAOManager = new cVAOManager();
+
+    sModelDrawInfo migModelInfo;
+    if (::g_pVAOManager->LoadModelIntoVAO( "assets//models//mig29.ply",
+                                           migModelInfo,
+                                           program))
+    {
+        std::cout << "Loaded " << migModelInfo.meshName << std::endl;
+        std::cout << "\t" << migModelInfo.numberOfVertices << " vertices" << std::endl;
+        std::cout << "\t" << migModelInfo.numberOfTriangles << " triangles" << std::endl;
+    }
 
 
     //const GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
@@ -277,7 +390,6 @@ int main(void)
     //glAttachShader(program, fragment_shader);
     //glLinkProgram(program);
 
-    GLuint program = ::g_pShaderManager->getIDFromFriendlyName("BasicShader");
 
     const GLint mvp_location = glGetUniformLocation(program, "MVP");
 
@@ -339,8 +451,8 @@ int main(void)
         // projection matrix
         p = glm::perspective( 60.0f,        // FOV
                               (float)width / (float)height, // Aspect ratio
-                              0.1f,            // Near plane
-                              1000.0f);         // Far plane
+                              0.001f,            // Near plane
+                              100.0f);         // Far plane
                               
 
  //       mat4x4_mul(mvp, p, m);
@@ -352,7 +464,7 @@ int main(void)
         mvp = p * matView * m;
 
         //glPointSize(6.0f);
-        //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
         glUseProgram(program);
 
@@ -361,7 +473,8 @@ int main(void)
         glBindVertexArray(vertex_array);
 
         //glDrawArrays(GL_TRIANGLES, 0, 3);
-        glDrawArrays(GL_TRIANGLES, 0, ::g_NumberOfVertices);
+        //glDrawArrays(GL_TRIANGLES, 0, ::g_NumberOfVertices);
+        glDrawArrays(GL_TRIANGLES, 0, ::g_NumberOfVerticesToDraw);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
