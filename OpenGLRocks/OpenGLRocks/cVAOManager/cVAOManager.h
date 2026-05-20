@@ -13,9 +13,16 @@
 //  vertex structure will also need to change (usually). 
 struct sVert
 {
-	float x, y, z;		// added "z"
+	// Vertex shader has:
+	// in vec3 vCol;
+	// in vec3 vPos;
 	float r, g, b;
+	float x, y, z;		
 };
+//float r, g, b, a;
+//float x, y, z, w;
+//float nx, ny, nz, nw;
+//float u, v;
 
 
 // This represents a single mesh (3D object) structure in 'indexed' format. 
@@ -54,6 +61,13 @@ public:
 	bool LoadModelIntoVAO(std::string fileName, 
 						  sModelDrawInfo &drawInfo, 
 						  unsigned int shaderProgramID);
+
+	//bool LoadModelIntoVAO(std::string fileName, 
+	//					  sModelDrawInfo &drawInfo, 
+	//					  unsigned int shaderProgramID,
+	//					  bool bHasNormals, 
+	//	                  bool bHasRGBColours,
+	//	                  bool bHasTextureCoords);
 
 	// We don't want to return an int, likely
 	bool FindDrawInfoByModelName(std::string filename,
