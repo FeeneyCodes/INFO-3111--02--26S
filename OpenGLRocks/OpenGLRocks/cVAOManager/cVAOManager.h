@@ -14,8 +14,6 @@
 struct sVert
 {
 	// Vertex shader has:
-	// in vec3 vCol;
-	// in vec3 vPos;
 	float r, g, b;
 	float x, y, z;		
 };
@@ -75,6 +73,8 @@ public:
 
 	std::string getLastError(bool bAndClear = true);
 
+	void setBasePath(std::string newBasePath);
+
 private:
 
 	std::map< std::string /*model name*/,
@@ -87,6 +87,8 @@ private:
 
 	std::string m_lastErrorString;
 	void m_AppendTextToLastError(std::string text, bool addNewLineBefore = true);
+
+	std::string m_FileBasePath = "";
 };
 
 #endif	// _cVAOManager_HG_

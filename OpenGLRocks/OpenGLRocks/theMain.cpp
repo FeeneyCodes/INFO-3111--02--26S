@@ -39,7 +39,7 @@ cVAOManager* g_pVAOManager = NULL;
 
 
 
-glm::vec3 eyePosition = glm::vec3(0.0f, 0.0f, -2.0f);
+glm::vec3 eyePosition = glm::vec3(0.0f, 0.0f, -1.0f);
 glm::vec3 atPosition = glm::vec3(0.0f, 0.0f, 0.0f);
 glm::vec3 upAxis = glm::vec3(0.0f, +1.0f, 0.0f);
 
@@ -114,8 +114,10 @@ int main(void)
     // The VAO manager (to load the models)
     ::g_pVAOManager = new cVAOManager();
 
+    ::g_pVAOManager->setBasePath("assets/models");
+
     sModelDrawInfo migModelInfo;
-    if (::g_pVAOManager->LoadModelIntoVAO( "assets//models//bun_zipper_XYZ_N.ply",
+    if (::g_pVAOManager->LoadModelIntoVAO( "mig29.ply",
                                            migModelInfo,
                                            program))
     {
@@ -123,10 +125,6 @@ int main(void)
         std::cout << "\t" << migModelInfo.numberOfVertices << " vertices" << std::endl;
         std::cout << "\t" << migModelInfo.numberOfTriangles << " triangles" << std::endl;
     }
-
-    ::g_pVAOManager->LoadModelIntoVAO("assets//models//mig27.ply",
-        migModelInfo,
-        program);
 
 
     const GLint mvp_location = glGetUniformLocation(program, "MVP");
@@ -159,7 +157,7 @@ int main(void)
         glm::mat4 matView = glm::lookAt(eyePosition, atPosition, upAxis);
 
         // projection matrix
-        p = glm::perspective( 60.0f,        // FOV
+        p = glm::perspective( glm::radians(60.0f),        // FOV
                               (float)width / (float)height, // Aspect ratio
                               0.001f,            // Near plane
                               100.0f);         // Far plane
@@ -169,12 +167,15 @@ int main(void)
         m = glm::mat4(1.0f);        // Identity matrix
         // combine the rotation
         m = rotateZ * m;
-        
+                                     
         //mvp  -- pvm
         mvp = p * matView * m;
 
         //glPointSize(6.0f);
-        //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        
+        // GL_LINE gives "wireframe"
+        // GL_FILL is default (solid or "filled" triangles)
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
         glUseProgram(program);
 
@@ -187,9 +188,8 @@ int main(void)
         //glDrawArrays(GL_TRIANGLES, 0, ::g_NumberOfVerticesToDraw);
         //glDrawArrays(GL_TRIANGLES, 0, 0);
 
-        //enable VAO(and everything else)
         sModelDrawInfo theModelToDraw;
-        if (::g_pVAOManager->FindDrawInfoByModelName( "assets//models//bun_zipper_XYZ_N.ply",
+        if (::g_pVAOManager->FindDrawInfoByModelName( "mig29.ply",
                                                       theModelToDraw))
         {
             glBindVertexArray(theModelToDraw.VAO_ID);

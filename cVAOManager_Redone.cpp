@@ -40,13 +40,6 @@ sModelDrawInfo::sModelDrawInfo()
 	return;
 }
 
-void cVAOManager::setBasePath(std::string newBasePath)
-{
-	this->m_FileBasePath = newBasePath;
-	return;
-}
-
-
 
 bool cVAOManager::LoadModelIntoVAO(
 		std::string fileName, 
@@ -60,9 +53,10 @@ bool cVAOManager::LoadModelIntoVAO(
 
 	drawInfo.meshName = fileName;
 
-	std::string fullFileNameWithPath = this->m_FileBasePath + "/" + fileName;
+	// Add the base path:
+	std::string fileNameWithPath = this->m_basePath + "/" + fileName;
 
-	if ( ! this->m_LoadTheModel( fullFileNameWithPath, drawInfo ) )
+	if ( ! this->m_LoadTheModel(fileNameWithPath, drawInfo ) )
 	{
 		this->m_AppendTextToLastError( "Didn't load model", true );
 		return false;
@@ -106,33 +100,28 @@ bool cVAOManager::LoadModelIntoVAO(
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, drawInfo.IndexBufferID);
 
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER,			// Type: Index element array
+	glBufferData( GL_ELEMENT_ARRAY_BUFFER,			// Type: Index element array
 	              sizeof( unsigned int ) * drawInfo.numberOfIndices, 
 	              (GLvoid*) drawInfo.pIndices,
                   GL_STATIC_DRAW );
 
 	// Set the vertex attributes.
 
-	// Find the vertex variables in the shader and get the locations...
-	// so: vPos and vCol should be in the shader...
 	GLint vpos_location = glGetAttribLocation(shaderProgramID, "vPos");	// program
 	GLint vcol_location = glGetAttribLocation(shaderProgramID, "vCol");	// program;
 
 	// Set the vertex attributes for this shader
-	// in the shader: "in vec3 vPos;"
 	glEnableVertexAttribArray(vpos_location);	// vPos
-	glVertexAttribPointer( vpos_location, 
-		                   3,		// vPos
+	glVertexAttribPointer( vpos_location, 3,		// vPos
 						   GL_FLOAT, GL_FALSE,
-						   sizeof(sVert),	// Stride
-						   (void*)offsetof(sVert, x) );// Offset
+						   sizeof(sVert), 
+						   ( void* )offsetof(sVert, x));
 
 	glEnableVertexAttribArray(vcol_location);	// vCol
-	glVertexAttribPointer( vcol_location, 
-		                   3,		// vCol
+	glVertexAttribPointer( vcol_location, 3,		// vCol
 						   GL_FLOAT, GL_FALSE,
-		                   sizeof(sVert),
-						   (void*)offsetof(sVert, r) );	// "r" for Red
+						   sizeof(sVert), 
+						   ( void* )offsetof(sVert, r));
 
 	// Now that all the parts are set up, set the VAO to zero
 	glBindVertexArray(0);
@@ -226,41 +215,23 @@ bool cVAOManager::m_LoadTheModel(std::string fileName,
 	
 	// This is set up to match the ply (3d model) file. 
 	// NOT the shader. 
-	// The idea is this matches the vertex layout in the file
 	struct sVertPly
 	{
-		//glm::vec3 pos;
-		//glm::vec4 colour;
-		// The mig file is xyz, nx,ny,nz
-		//element vertex 3014
-		//property float x
-		//property float y
-		//property float z
-		//property float nx
-		//property float ny
-		//property float nz
-		glm::vec3 positionXYZ;
-		glm::vec3 normalXYZ;
+		glm::vec3 position;
+		glm::vec3 normal;
 	};
 
 	std::vector<sVertPly> vecTempPlyVerts;
 
 	sVertPly tempVert;
 	// Load the vertices...
-	for ( unsigned int index = 0; index != drawInfo.numberOfVertices; // ::g_NumberOfVertices; 
+	for ( unsigned int index = 0; index != drawInfo.numberOfVertices; 
 		  index++ )
 	{
-		thePlyFile >> tempVert.positionXYZ.x;
-		thePlyFile >> tempVert.positionXYZ.y;
-		thePlyFile >> tempVert.positionXYZ.z;
+		thePlyFile >> tempVert.position.x >> tempVert.position.y >> tempVert.position.z;
+		
 
-		thePlyFile >> tempVert.normalXYZ.x;
-		thePlyFile >> tempVert.normalXYZ.y;
-		thePlyFile >> tempVert.normalXYZ.z;
-		
-		
-		//thePlyFile >> tempVert.colour.x >> tempVert.colour.y
-		//	       >> tempVert.colour.z >> tempVert.colour.w; 
+		thePlyFile >> tempVert.normal.x >> tempVert.normal.y >> tempVert.normal.z;
 
 		//// Scale the colour from 0 to 1, instead of 0 to 255
 		//tempVert.colour.x /= 255.0f;
@@ -276,7 +247,6 @@ bool cVAOManager::m_LoadTheModel(std::string fileName,
 	// - sVertPly was made to match the file format
 	// - sVert was made to match the shader vertex attrib format
 
-	// This array is the one that matches the shader...
 	drawInfo.pVertices = new sVert[drawInfo.numberOfVertices];
 
 	// Optional clear array to zero 
@@ -284,13 +254,14 @@ bool cVAOManager::m_LoadTheModel(std::string fileName,
 
 	for ( unsigned int index = 0; index != drawInfo.numberOfVertices; index++ )
 	{
-		drawInfo.pVertices[index].x = vecTempPlyVerts[index].positionXYZ.x;
-		drawInfo.pVertices[index].y = vecTempPlyVerts[index].positionXYZ.y;
-		drawInfo.pVertices[index].z = vecTempPlyVerts[index].positionXYZ.z;
+		drawInfo.pVertices[index].x = vecTempPlyVerts[index].position.x;
+		drawInfo.pVertices[index].y = vecTempPlyVerts[index].position.y;
+		drawInfo.pVertices[index].z = vecTempPlyVerts[index].position.z;
 
-		drawInfo.pVertices[index].r = 1.0f;		// vecTempPlyVerts[index].colour.r;
-		drawInfo.pVertices[index].g = 1.0f;		// vecTempPlyVerts[index].colour.g;
-		drawInfo.pVertices[index].b = 1.0f;		// vecTempPlyVerts[index].colour.b;
+		// Doesn't have colour, so assign it here
+		drawInfo.pVertices[index].r = 1.0f;
+		drawInfo.pVertices[index].g = 1.0f;
+		drawInfo.pVertices[index].b = 1.0f;
 	}// for ( unsigned int index...
 
 
@@ -316,12 +287,6 @@ bool cVAOManager::m_LoadTheModel(std::string fileName,
 	}//for ( unsigned int index...
 
 	
-	// NOW, we need to put them into the vertex array buffer that 
-	//	will be passed to OpenGL. Why? 
-	// Because we called glDrawArrays(), that's why. 
-
-//	::g_NumberOfVertsToDraw = ::g_NumberOfTriangles * 3;	// 3 because "triangles"
-
 	drawInfo.numberOfIndices = drawInfo.numberOfTriangles * 3;
 
 	drawInfo.pIndices = new unsigned int[drawInfo.numberOfIndices];
@@ -380,4 +345,11 @@ void cVAOManager::m_AppendTextToLastError(std::string text, bool addNewLineBefor
 
 	return;
 
+}
+
+
+void cVAOManager::setBasePath(std::string newBasePath)
+{
+	this->m_basePath = newBasePath;
+	return;
 }
