@@ -124,12 +124,34 @@ int main(void)
     // Add some models to draw...
 
     cMesh* pMig = new cMesh("mig29.ply");
+    pMig->position.x = 5.0f;
+    pMig->position.y = 0.1f;
+    pMig->position.z = 0.7f;
+    pMig->rotation.y = glm::radians<float>(90.0f);
+    pMig->scale = 1.0f;
+    pMig->diffuseRGB = glm::vec3(0.7f, 1.0f, 0.3f);
+
     cMesh* pShuttle = new cMesh("SpaceShuttleOrbiter_xyz_n.ply");
+    pShuttle->scale = 1.0f / 200.0f;
+    pShuttle->rotation.x = glm::radians<float>(-90.0f);
+    pShuttle->diffuseRGB = glm::vec3(0.56f, 0.8f, 0.1f);
+    pShuttle->bIsWireframe = true;
+
     cMesh* pBunny = new cMesh("bun_zipper_XYZ_N.ply");
+    pBunny->position.x = -3.0f;
+    pBunny->scale = 2.0f;
+    pBunny->diffuseRGB = glm::vec3(0.3f, 0.26f, 0.56f);
+
+    cMesh* pBunny2 = new cMesh("bun_zipper_XYZ_N.ply");
+    pBunny2->position.x = -3.0f;
+    pBunny2->position.y = 2.0f;
+    pBunny2->scale = 2.5f;
+    pBunny2->diffuseRGB = glm::vec3(0.6f, 0.1f, 0.7f);
 
     ::g_vec_pModelsToDraw.push_back( pMig );
     ::g_vec_pModelsToDraw.push_back( pShuttle );
     ::g_vec_pModelsToDraw.push_back(pBunny);
+    ::g_vec_pModelsToDraw.push_back(pBunny2);
 
     const GLint mvp_location = glGetUniformLocation(program, "MVP");
 
@@ -173,19 +195,48 @@ int main(void)
 
             glm::mat4 mvp;
 
-            glm::mat4 matModel;         // m          //mat4x4 m, p, mvp;
-            //       mat4x4_rotate_Z(m, m, (float)glfwGetTime());
-            glm::mat4 rotateZ = glm::rotate(glm::mat4(1.0f),
-                0.0f, // (float)glfwGetTime(),         // Angle
-                glm::vec3(0.0f, 0.0f, 1.0f));
+            // The model matrix when set to the "identity" 
+            //  means it's just like it is in the file.
+            glm::mat4 matModel = glm::mat4(1.0f);        // m          //mat4x4 m, p, mvp;
+
+            // Movement or placement 
+            //glm::mat4 matTranslate = glm::mat4(1.0f);
+            glm::mat4 matTranslate
+                = glm::translate( glm::mat4(1.0f), 
+                                  pCurrentMesh->position );
+                                                    
+            // Rotation
+            glm::mat4 matRotateX
+                = glm::rotate( glm::mat4(1.0f),
+                               pCurrentMesh->rotation.x,
+                               glm::vec3(1.0f, 0.0f, 0.0f) );
+
+            glm::mat4 matRotateY
+                = glm::rotate( glm::mat4(1.0f),
+                               pCurrentMesh->rotation.y,
+                               glm::vec3(0.0f, 1.0f, 0.0f) );
+
+            glm::mat4 matRotateZ 
+                = glm::rotate( glm::mat4(1.0f),
+                               pCurrentMesh->rotation.z,
+                               glm::vec3(0.0f, 0.0f, 1.0f) );
+
+            // Scaling
+            glm::mat4 matScaleXYZ
+                = glm::scale( glm::mat4(1.0f),
+                              glm::vec3( pCurrentMesh->scale,
+                                         pCurrentMesh->scale,
+                                         pCurrentMesh->scale) );
 
 
-
-
-            //       mat4x4_mul(mvp, p, m);
-            matModel = glm::mat4(1.0f);        // Identity matrix
-            // combine the rotation
-            matModel = rotateZ * matModel;
+            // Apply the scale matrix
+            matModel = matScaleXYZ * matModel;  // Last applied
+            // Apply the rotation matrices
+            matModel = matRotateX * matModel;
+            matModel = matRotateY * matModel;
+            matModel = matRotateZ * matModel;
+            // Apply the translation matrix
+            matModel = matTranslate * matModel; // 1st applied
 
             //mvp  -- pvm
             // mvp = p * matView * m;
@@ -195,11 +246,13 @@ int main(void)
 
             // GL_LINE gives "wireframe"
             // GL_FILL is default (solid or "filled" triangles)
-            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
             glUseProgram(program);
 
-            glUniformMatrix4fv(mvp_location, 1, GL_FALSE, (const GLfloat*)&mvp);
+            glUniformMatrix4fv( mvp_location, 
+                                1, 
+                                GL_FALSE, 
+                                (const GLfloat*)&mvp);
 
             //        glBindVertexArray(vertex_array);
 
@@ -207,6 +260,24 @@ int main(void)
                     //glDrawArrays(GL_TRIANGLES, 0, ::g_NumberOfVertices);
                     //glDrawArrays(GL_TRIANGLES, 0, ::g_NumberOfVerticesToDraw);
                     //glDrawArrays(GL_TRIANGLES, 0, 0);
+
+            // Get the location of the colour variable in the shader
+            // uniform vec3 colourRGB;
+            GLint colourRGB_UL = glGetUniformLocation(program, "colourRGB");
+
+            glUniform3f( colourRGB_UL,
+                         pCurrentMesh->diffuseRGB.r,
+                         pCurrentMesh->diffuseRGB.g,
+                         pCurrentMesh->diffuseRGB.b);
+
+            if (pCurrentMesh->bIsWireframe)
+            {
+                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+            }
+            else
+            {
+                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+            }
 
             std::string modelToDraw = pCurrentMesh->modelName;
 

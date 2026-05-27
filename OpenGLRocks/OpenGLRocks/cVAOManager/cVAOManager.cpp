@@ -254,6 +254,21 @@ bool cVAOManager::m_LoadTheModel(std::string fileName,
 		thePlyFile >> tempVert.positionXYZ.y;
 		thePlyFile >> tempVert.positionXYZ.z;
 
+		//// HACK
+		//if (fileName == "assets/models/SpaceShuttleOrbiter_xyz_n.ply")
+		//{
+		//	tempVert.positionXYZ.x /= 100.0f;
+		//	tempVert.positionXYZ.y /= 100.0f;
+		//	tempVert.positionXYZ.z /= 100.0f;
+
+		//	tempVert.positionXYZ.x += 5.0f;
+		//}
+
+		//if (fileName == "assets/models/mig29.ply")
+		//{
+		//	tempVert.positionXYZ.x -= 3.0f;
+		//}
+
 		thePlyFile >> tempVert.normalXYZ.x;
 		thePlyFile >> tempVert.normalXYZ.y;
 		thePlyFile >> tempVert.normalXYZ.z;
