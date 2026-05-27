@@ -6,6 +6,7 @@
 
 #include <string>
 #include <map>
+#include <vector>
 
 // The vertex structure, as it is in the SHADER (on the GPU)
 // This is also called the 'vertex layout'. 
@@ -14,8 +15,8 @@
 struct sVert
 {
 	// Vertex shader has:
-	float r, g, b;
-	float x, y, z;		
+	float r, g, b;		// vCol
+	float x, y, z;		// vPos
 };
 //float r, g, b, a;
 //float x, y, z, w;
@@ -59,6 +60,24 @@ public:
 	bool LoadModelIntoVAO(std::string fileName, 
 						  sModelDrawInfo &drawInfo, 
 						  unsigned int shaderProgramID);
+
+
+	bool LoadModelIntoVAO(std::string fileName, 
+						  sModelDrawInfo &drawInfo, 
+						  unsigned int shaderProgramID,
+		                  bool bHasNormals, bool bHasColours);
+
+	bool LoadModelIntoVAO_with_XYZ();
+	bool LoadModelIntoVAO_with_XYZ_N();
+	bool LoadModelIntoVAO_with_XYZ_Colours();
+
+	bool LoadModelIntoVAO(std::string fileName, 
+						  unsigned int shaderProgramID);
+
+	// Same as above, but you pass a vector of strings. 
+	// (it just calls LoadModelIntoVAO over and over)
+	bool LoadModelsIntoVAO(std::vector< std::string > vecFileNames,
+	                       unsigned int shaderProgramID);
 
 	//bool LoadModelIntoVAO(std::string fileName, 
 	//					  sModelDrawInfo &drawInfo, 

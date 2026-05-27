@@ -17,10 +17,12 @@
 #include <stdlib.h>
 #include <stddef.h>
 #include <stdio.h>
-#include <iostream>
-#include <fstream>
 #include <string>
 #include <vector>
+
+#include <iostream>     // io stream
+#include <fstream>      // file stream
+#include <sstream>      // string stream
 
 #include "cShaderManager/cShaderManager.h"
 #include "cVAOManager/cVAOManager.h"
@@ -39,7 +41,7 @@ cVAOManager* g_pVAOManager = NULL;
 
 
 
-glm::vec3 eyePosition = glm::vec3(0.0f, 0.0f, -1.0f);
+glm::vec3 eyePosition = glm::vec3(0.0f, 0.0f, -2.0f);
 glm::vec3 atPosition = glm::vec3(0.0f, 0.0f, 0.0f);
 glm::vec3 upAxis = glm::vec3(0.0f, +1.0f, 0.0f);
 
@@ -126,6 +128,12 @@ int main(void)
         std::cout << "\t" << migModelInfo.numberOfTriangles << " triangles" << std::endl;
     }
 
+    // Load 
+    sModelDrawInfo shuttleModelInfo;
+    ::g_pVAOManager->LoadModelIntoVAO("SpaceShuttleOrbiter_xyz_n.ply", shuttleModelInfo, program);
+
+    sModelDrawInfo bunnyModelInfo;
+    ::g_pVAOManager->LoadModelIntoVAO("bun_zipper_XYZ_N.ply", bunnyModelInfo, program);
 
     const GLint mvp_location = glGetUniformLocation(program, "MVP");
 
@@ -159,8 +167,8 @@ int main(void)
         // projection matrix
         p = glm::perspective( glm::radians(60.0f),        // FOV
                               (float)width / (float)height, // Aspect ratio
-                              0.001f,            // Near plane
-                              100.0f);         // Far plane
+                              0.1f,            // Near plane
+                              1000.0f);         // Far plane
                               
 
  //       mat4x4_mul(mvp, p, m);
@@ -189,7 +197,7 @@ int main(void)
         //glDrawArrays(GL_TRIANGLES, 0, 0);
 
         sModelDrawInfo theModelToDraw;
-        if (::g_pVAOManager->FindDrawInfoByModelName( "mig29.ply",
+        if (::g_pVAOManager->FindDrawInfoByModelName( "bun_zipper_XYZ_N.ply",
                                                       theModelToDraw))
         {
             glBindVertexArray(theModelToDraw.VAO_ID);
@@ -205,8 +213,20 @@ int main(void)
             //disable VAO(and everything else)
             glBindVertexArray(0); 	
         }
-		
 
+
+
+		
+        // Print out the camera's location
+        std::stringstream ssWindowText;
+        ssWindowText << "Camera (xyz): "
+            << eyePosition.x << ", "
+            << eyePosition.y << ", "
+            << eyePosition.z;
+
+        glfwSetWindowTitle( window, ssWindowText.str().c_str() );
+
+        // Everything is drawn so "present" the "back buffer"
 
         glfwSwapBuffers(window);
         glfwPollEvents();
