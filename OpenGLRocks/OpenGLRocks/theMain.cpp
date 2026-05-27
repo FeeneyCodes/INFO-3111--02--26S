@@ -43,7 +43,7 @@ cVAOManager* g_pVAOManager = NULL;
 
 
 
-glm::vec3 eyePosition = glm::vec3(0.0f, 0.0f, -2.0f);
+glm::vec3 eyePosition = glm::vec3(0.0f, 0.0f, -10.0f);
 glm::vec3 atPosition = glm::vec3(0.0f, 0.0f, 0.0f);
 glm::vec3 upAxis = glm::vec3(0.0f, +1.0f, 0.0f);
 
@@ -134,7 +134,6 @@ int main(void)
     const GLint mvp_location = glGetUniformLocation(program, "MVP");
 
 
-    //std::vector<cMesh> vecModelsToDraw;
     
     while (!glfwWindowShouldClose(window))
     {
@@ -143,75 +142,97 @@ int main(void)
         const float ratio = width / (float)height;
 
         glViewport(0, 0, width, height);
+        // Clear the screen
+        //glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        glm::mat4 m;             //mat4x4 m, p, mvp;
-        glm::mat4 p;
-        glm::mat4 mvp;
-        //mat4x4_identity(m);
-        
- //       mat4x4_rotate_Z(m, m, (float)glfwGetTime());
-        glm::mat4 rotateZ = glm::rotate( glm::mat4(1.0f), 
-                                         0.0f, // (float)glfwGetTime(),         // Angle
-                                         glm::vec3(0.0f, 0.0f, 1.0f));
-            
+        // Proection and View (camera) only changes once per scene draw
 
-
+        glm::mat4 matProjection;    // p
         // the "camera"
         glm::mat4 matView = glm::lookAt(eyePosition, atPosition, upAxis);
 
         // projection matrix
-        p = glm::perspective( glm::radians(60.0f),        // FOV
-                              (float)width / (float)height, // Aspect ratio
-                              0.1f,            // Near plane
-                              1000.0f);         // Far plane
-                              
+        matProjection = glm::perspective(
+            glm::radians(60.0f),        // FOV
+            (float)width / (float)height, // Aspect ratio
+            0.1f,            // Near plane
+            1000.0f);         // Far plane
 
- //       mat4x4_mul(mvp, p, m);
-        m = glm::mat4(1.0f);        // Identity matrix
-        // combine the rotation
-        m = rotateZ * m;
-                                     
-        //mvp  -- pvm
-        mvp = p * matView * m;
 
-        //glPointSize(6.0f);
-        
-        // GL_LINE gives "wireframe"
-        // GL_FILL is default (solid or "filled" triangles)
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
-        glUseProgram(program);
-
-        glUniformMatrix4fv(mvp_location, 1, GL_FALSE, (const GLfloat*)&mvp);
-
-//        glBindVertexArray(vertex_array);
-
-        //glDrawArrays(GL_TRIANGLES, 0, 3);
-        //glDrawArrays(GL_TRIANGLES, 0, ::g_NumberOfVertices);
-        //glDrawArrays(GL_TRIANGLES, 0, ::g_NumberOfVerticesToDraw);
-        //glDrawArrays(GL_TRIANGLES, 0, 0);
-
-        sModelDrawInfo theModelToDraw;
-        if (::g_pVAOManager->FindDrawInfoByModelName( "mig29.ply",
-                                                      theModelToDraw))
+        for ( std::vector< cMesh* >::iterator it_pMesh = ::g_vec_pModelsToDraw.begin();
+              it_pMesh != ::g_vec_pModelsToDraw.end();
+              it_pMesh++)
         {
-            glBindVertexArray(theModelToDraw.VAO_ID);
+            // *******************************************************
+            // STARTOF : Draw THIS model
 
-            // Uses the index (element) buffer to look up
-            //  into the bound vertex buffer and sends those final
-            //  vertices to the vertex shader
-            glDrawElements(GL_TRIANGLES,
-                           theModelToDraw.numberOfIndices, // How many indices
-                           GL_UNSIGNED_INT,
-                           (void*) 0);      // What index to start from
+            cMesh* pCurrentMesh = *it_pMesh;
 
-            //disable VAO(and everything else)
-            glBindVertexArray(0); 	
-        }
+            // Anything to do with model is now inside a loop
+
+            glm::mat4 mvp;
+
+            glm::mat4 matModel;         // m          //mat4x4 m, p, mvp;
+            //       mat4x4_rotate_Z(m, m, (float)glfwGetTime());
+            glm::mat4 rotateZ = glm::rotate(glm::mat4(1.0f),
+                0.0f, // (float)glfwGetTime(),         // Angle
+                glm::vec3(0.0f, 0.0f, 1.0f));
 
 
 
+
+            //       mat4x4_mul(mvp, p, m);
+            matModel = glm::mat4(1.0f);        // Identity matrix
+            // combine the rotation
+            matModel = rotateZ * matModel;
+
+            //mvp  -- pvm
+            // mvp = p * matView * m;
+            mvp = matProjection * matView * matModel;
+
+            //glPointSize(6.0f);
+
+            // GL_LINE gives "wireframe"
+            // GL_FILL is default (solid or "filled" triangles)
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+            glUseProgram(program);
+
+            glUniformMatrix4fv(mvp_location, 1, GL_FALSE, (const GLfloat*)&mvp);
+
+            //        glBindVertexArray(vertex_array);
+
+                    //glDrawArrays(GL_TRIANGLES, 0, 3);
+                    //glDrawArrays(GL_TRIANGLES, 0, ::g_NumberOfVertices);
+                    //glDrawArrays(GL_TRIANGLES, 0, ::g_NumberOfVerticesToDraw);
+                    //glDrawArrays(GL_TRIANGLES, 0, 0);
+
+            std::string modelToDraw = pCurrentMesh->modelName;
+
+            sModelDrawInfo theModelToDraw;
+            if (::g_pVAOManager->FindDrawInfoByModelName( modelToDraw,
+                                                          theModelToDraw))
+            {
+                glBindVertexArray(theModelToDraw.VAO_ID);
+
+                // Uses the index (element) buffer to look up
+                //  into the bound vertex buffer and sends those final
+                //  vertices to the vertex shader
+                glDrawElements(GL_TRIANGLES,
+                    theModelToDraw.numberOfIndices, // How many indices
+                    GL_UNSIGNED_INT,
+                    (void*)0);      // What index to start from
+
+                //disable VAO(and everything else)
+                glBindVertexArray(0);
+            }
+
+            // ENDOF: Drawing THIS model
+            // ************************************************
+
+
+        }//for ( std::vector<cMesh*>::iterator it_pMesh
 		
         // Print out the camera's location
         std::stringstream ssWindowText;
@@ -256,7 +277,7 @@ static void key_callback(GLFWwindow* window,
         glfwSetWindowShouldClose(window, GLFW_TRUE);
     }
 
-    const float CAMERASPEED = 0.01f;
+    const float CAMERASPEED = 1.0f;
     // Camera 
     if (key == GLFW_KEY_W)          // Forward (along Z axis)
     {
