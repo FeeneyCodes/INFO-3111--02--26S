@@ -19,6 +19,9 @@
     <Filter Include="VAOManager">
       <UniqueIdentifier>{3dc2a3fb-e418-44ef-acfa-9b93f813b49f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Mesh">
+      <UniqueIdentifier>{a5751d5f-3071-4bf8-969f-46481a2d38e7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="theMain.cpp">
@@ -36,6 +39,12 @@
     <ClCompile Include="cVAOManager\cVAOManager.cpp">
       <Filter>VAOManager</Filter>
     </ClCompile>
+    <ClCompile Include="AssetLoading.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="cMesh.cpp">
+      <Filter>Mesh</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="cShaderManager\cShaderManager.h">
@@ -47,8 +56,11 @@
     <ClInclude Include="cVAOManager\cVAOManager.h">
       <Filter>VAOManager</Filter>
     </ClInclude>
-    <ClInclude Include="cMesh.h">
+    <ClInclude Include="globalStuff.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cMesh.h">
+      <Filter>Mesh</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

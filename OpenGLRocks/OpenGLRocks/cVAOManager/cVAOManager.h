@@ -56,7 +56,6 @@ struct sModelDrawInfo
 class cVAOManager
 {
 public:
-
 	bool LoadModelIntoVAO(std::string fileName, 
 						  sModelDrawInfo &drawInfo, 
 						  unsigned int shaderProgramID);
@@ -95,7 +94,6 @@ public:
 	void setBasePath(std::string newBasePath);
 
 private:
-
 	std::map< std::string /*model name*/,
 		      sModelDrawInfo /* info needed to draw*/ >
 		m_map_ModelName_to_VAOID;

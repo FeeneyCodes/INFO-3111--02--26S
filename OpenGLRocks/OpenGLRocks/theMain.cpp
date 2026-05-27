@@ -27,6 +27,8 @@
 #include "cShaderManager/cShaderManager.h"
 #include "cVAOManager/cVAOManager.h"
 
+#include "globalStuff.h"
+
 cShaderManager* g_pShaderManager = NULL;
 cVAOManager* g_pVAOManager = NULL;
 
@@ -45,7 +47,9 @@ glm::vec3 eyePosition = glm::vec3(0.0f, 0.0f, -2.0f);
 glm::vec3 atPosition = glm::vec3(0.0f, 0.0f, 0.0f);
 glm::vec3 upAxis = glm::vec3(0.0f, +1.0f, 0.0f);
 
-
+// Anything in this vector will be drawn in the main loop
+// (declared in globalStuff.h)
+std::vector< cMesh* > g_vec_pModelsToDraw;
 
 static void error_callback(int error, const char* description);
 
@@ -54,7 +58,6 @@ static void key_callback(GLFWwindow* window,
     int scancode,
     int action,
     int mods);
-
 
 
 int main(void)
@@ -116,24 +119,17 @@ int main(void)
     // The VAO manager (to load the models)
     ::g_pVAOManager = new cVAOManager();
 
-    ::g_pVAOManager->setBasePath("assets/models");
+    LoadTheModels(::g_pVAOManager, program);
 
-    sModelDrawInfo migModelInfo;
-    if (::g_pVAOManager->LoadModelIntoVAO( "mig29.ply",
-                                           migModelInfo,
-                                           program))
-    {
-        std::cout << "Loaded " << migModelInfo.meshName << std::endl;
-        std::cout << "\t" << migModelInfo.numberOfVertices << " vertices" << std::endl;
-        std::cout << "\t" << migModelInfo.numberOfTriangles << " triangles" << std::endl;
-    }
+    // Add some models to draw...
 
-    // Load 
-    sModelDrawInfo shuttleModelInfo;
-    ::g_pVAOManager->LoadModelIntoVAO("SpaceShuttleOrbiter_xyz_n.ply", shuttleModelInfo, program);
+    cMesh* pMig = new cMesh("mig29.ply");
+    cMesh* pShuttle = new cMesh("SpaceShuttleOrbiter_xyz_n.ply");
+    cMesh* pBunny = new cMesh("bun_zipper_XYZ_N.ply");
 
-    sModelDrawInfo bunnyModelInfo;
-    ::g_pVAOManager->LoadModelIntoVAO("bun_zipper_XYZ_N.ply", bunnyModelInfo, program);
+    ::g_vec_pModelsToDraw.push_back( pMig );
+    ::g_vec_pModelsToDraw.push_back( pShuttle );
+    ::g_vec_pModelsToDraw.push_back(pBunny);
 
     const GLint mvp_location = glGetUniformLocation(program, "MVP");
 
@@ -197,7 +193,7 @@ int main(void)
         //glDrawArrays(GL_TRIANGLES, 0, 0);
 
         sModelDrawInfo theModelToDraw;
-        if (::g_pVAOManager->FindDrawInfoByModelName( "bun_zipper_XYZ_N.ply",
+        if (::g_pVAOManager->FindDrawInfoByModelName( "mig29.ply",
                                                       theModelToDraw))
         {
             glBindVertexArray(theModelToDraw.VAO_ID);
