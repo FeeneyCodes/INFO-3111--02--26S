@@ -24,4 +24,7 @@ public:
 	static const unsigned int NUM_TEXTURES = 8;
 	std::string textures[NUM_TEXTURES];
 	float textureBlendRatio[NUM_TEXTURES];
+
+	// Child objects (maybe later)
+	std::vector< cMesh*> m_vec_pChildMeshes;
 };
