@@ -213,23 +213,35 @@ int main(void)
         glViewport(0, 0, width, height);
         // Clear the screen
         //glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // Proection and View (camera) only changes once per scene draw
 
-        glm::mat4 matProjection;    // p
         // the "camera"
         glm::mat4 matView 
             = glm::lookAt( ::g_pFlyCamera->getEyeLocation(),        // eyePosition, 
                            ::g_pFlyCamera->getTargetLocation(),     // atPosition, 
                            upAxis);
 
-        // projection matrix
-        matProjection = glm::perspective(
+        // projection matrix // p
+        glm::mat4 matProjection = glm::perspective(
             glm::radians(60.0f),        // FOV
             (float)width / (float)height, // Aspect ratio
             0.1f,            // Near plane
             1000.0f);         // Far plane
+
+        // uniform mat4 mView;
+        // uniform mat4 mProj;
+        // 1. Get the uniform location
+        // 2. Pass data to shader with glUniform
+        GLint mView_UL = glGetUniformLocation(program, "mView");
+        GLint mProj_UL = glGetUniformLocation(program, "mProj");
+
+        glUniformMatrix4fv( mView_UL, 1, GL_FALSE, 
+                            (const GLfloat*)&matView);
+
+        glUniformMatrix4fv( mProj_UL, 1, GL_FALSE,
+                            (const GLfloat*)&matProjection);
 
 
         for ( std::vector< cMesh* >::iterator it_pMesh = ::g_vec_pModelsToDraw.begin();
@@ -243,7 +255,7 @@ int main(void)
 
             // Anything to do with model is now inside a loop
 
-            glm::mat4 mvp;
+ //           glm::mat4 mvp;
 
             // The model matrix when set to the "identity" 
             //  means it's just like it is in the file.
@@ -288,9 +300,17 @@ int main(void)
             // Apply the translation matrix
             matModel = matTranslate * matModel; // 1st applied
 
+            // Copy the matModel to the shader, too
+            // uniform mat4 mModel;
+            GLint mModel_UL = glGetUniformLocation(program, "mModel");
+
+            glUniformMatrix4fv( mModel_UL, 1, GL_FALSE,
+                                (const GLfloat*)&matModel);
+
+
             //mvp  -- pvm
             // mvp = p * matView * m;
-            mvp = matProjection * matView * matModel;
+            //mvp = matProjection * matView * matModel;
 
             //glPointSize(6.0f);
 
@@ -299,10 +319,10 @@ int main(void)
 
             glUseProgram(program);
 
-            glUniformMatrix4fv( mvp_location, 
-                                1, 
-                                GL_FALSE, 
-                                (const GLfloat*)&mvp);
+//            glUniformMatrix4fv( mvp_location, 
+//                                1, 
+//                                GL_FALSE, 
+//                                (const GLfloat*)&mvp);
 
             //        glBindVertexArray(vertex_array);
 

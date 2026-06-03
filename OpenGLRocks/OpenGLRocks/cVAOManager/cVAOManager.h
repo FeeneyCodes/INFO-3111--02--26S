@@ -18,6 +18,11 @@ struct sVert
 	float r, g, b;		// vCol
 	float x, y, z;		// vPos
 };
+in vec4 vertexColour;		// RGBA
+in vec4 vertexPosition;		// XYZ (w not used)
+in vec4 vertexNormal;		// XYZ (w not used)
+in vec4 vertexUVx2;			// 2 sets of UVs (because it's a vec4)
+
 //float r, g, b, a;
 //float x, y, z, w;
 //float nx, ny, nz, nw;

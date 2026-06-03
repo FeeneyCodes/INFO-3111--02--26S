@@ -112,6 +112,10 @@ bool cVAOManager::LoadModelIntoVAO(
                   GL_STATIC_DRAW );
 
 	// Set the vertex attributes.
+	in vec4 vertexColour;		// RGBA
+	in vec4 vertexPosition;		// XYZ (w not used)
+	in vec4 vertexNormal;		// XYZ (w not used)
+	in vec4 vertexUVx2;			// 2 sets of UVs (because it's a vec4)
 
 	// Find the vertex variables in the shader and get the locations...
 	// so: vPos and vCol should be in the shader...
