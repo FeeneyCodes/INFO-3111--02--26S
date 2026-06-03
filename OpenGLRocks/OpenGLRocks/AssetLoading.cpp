@@ -23,5 +23,8 @@ void LoadTheModels(cVAOManager* pVAOManager, unsigned int shaderProgramID)
     sModelDrawInfo bunnyModelInfo;
     pVAOManager->LoadModelIntoVAO("bun_zipper_XYZ_N.ply", bunnyModelInfo, shaderProgramID);
 
+    sModelDrawInfo terrainModelInfo;
+    pVAOManager->LoadModelIntoVAO("Terrain_xyz_only.ply", terrainModelInfo, shaderProgramID);
+
     return;
 }

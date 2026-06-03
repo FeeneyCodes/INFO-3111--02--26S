@@ -130,6 +130,12 @@ int main(void)
 
     // Add some models to draw...
 
+    cMesh* pTerrain = new cMesh("Terrain_xyz_only.ply");
+    pTerrain->diffuseRGB = glm::vec3(1.0f, 1.0f, 1.0f);
+    pTerrain->bIsWireframe = true;
+    ::g_vec_pModelsToDraw.push_back(pTerrain);
+
+
     cMesh* pMig = new cMesh("mig29.ply");
     pMig->position.x = 5.0f;
     pMig->position.y = 0.1f;
