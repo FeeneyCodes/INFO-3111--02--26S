@@ -32,6 +32,8 @@
 cShaderManager* g_pShaderManager = NULL;
 cVAOManager* g_pVAOManager = NULL;
 
+cBasicFlyCamera* g_pFlyCamera = NULL;
+
 //struct Vertex
 //{
 //    glm::vec3 position;      // vec2 pos;  x, y
@@ -43,8 +45,8 @@ cVAOManager* g_pVAOManager = NULL;
 
 
 
-glm::vec3 eyePosition = glm::vec3(0.0f, 0.0f, -10.0f);
-glm::vec3 atPosition = glm::vec3(0.0f, 0.0f, 0.0f);
+//glm::vec3 eyePosition = glm::vec3(0.0f, 0.0f, -10.0f);
+//glm::vec3 atPosition = glm::vec3(0.0f, 0.0f, 0.0f);
 glm::vec3 upAxis = glm::vec3(0.0f, +1.0f, 0.0f);
 
 // Anything in this vector will be drawn in the main loop
@@ -58,6 +60,25 @@ static void key_callback(GLFWwindow* window,
     int scancode,
     int action,
     int mods);
+
+// Set the callbacks for the mouse
+// https://www.glfw.org/docs/3.3/input_guide.html#input_mouse
+//
+// Set with glfwSetCursorPosCallback(window, cursor_position_callback);
+void cursor_position_callback(GLFWwindow* window, double xpos, double ypos);
+//
+// Set with glfwSetCursorEnterCallback(window, cursor_enter_callback);
+void cursor_enter_callback(GLFWwindow* window, int entered);
+//
+// Set with glfwSetMouseButtonCallback(window, mouse_button_callback);
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
+//
+// Set with glfwSetScrollCallback(window, scroll_callback);
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+
+// These are in the mouse_keyboard_async.cpp file
+void handleMouseAsync(GLFWwindow* window);
+void handleKeyboardAsync(GLFWwindow* window);
 
 
 int main(void)
@@ -86,6 +107,12 @@ int main(void)
     }
 
     glfwSetKeyCallback(window, key_callback);
+    // Also the mouse callbacks
+    glfwSetCursorPosCallback(window, cursor_position_callback);   
+    glfwSetCursorEnterCallback(window, cursor_enter_callback);    
+    glfwSetMouseButtonCallback(window, mouse_button_callback);    
+    glfwSetScrollCallback(window, scroll_callback);
+
 
     glfwMakeContextCurrent(window);
     //gladLoadGL(glfwGetProcAddress);
@@ -130,9 +157,11 @@ int main(void)
 
     // Add some models to draw...
 
-    cMesh* pTerrain = new cMesh("Terrain_xyz_only.ply");
+    cMesh* pTerrain = new cMesh("Terrain_xyz_n.ply");
     pTerrain->diffuseRGB = glm::vec3(1.0f, 1.0f, 1.0f);
     pTerrain->bIsWireframe = true;
+    pTerrain->rotation.x = glm::radians<float>(-90.0f);
+    pTerrain->position.y = -40.0f;
     ::g_vec_pModelsToDraw.push_back(pTerrain);
 
 
@@ -166,10 +195,15 @@ int main(void)
     ::g_vec_pModelsToDraw.push_back(pBunny);
     ::g_vec_pModelsToDraw.push_back(pBunny2);
 
+
+    // Create the fly camera
+    ::g_pFlyCamera = new cBasicFlyCamera();
+    ::g_pFlyCamera->setEyeLocation(0.0f, 0.0f, -10.0f);
+
+
+
     const GLint mvp_location = glGetUniformLocation(program, "MVP");
-
-
-    
+ 
     while (!glfwWindowShouldClose(window))
     {
         int width, height;
@@ -185,7 +219,10 @@ int main(void)
 
         glm::mat4 matProjection;    // p
         // the "camera"
-        glm::mat4 matView = glm::lookAt(eyePosition, atPosition, upAxis);
+        glm::mat4 matView 
+            = glm::lookAt( ::g_pFlyCamera->getEyeLocation(),        // eyePosition, 
+                           ::g_pFlyCamera->getTargetLocation(),     // atPosition, 
+                           upAxis);
 
         // projection matrix
         matProjection = glm::perspective(
@@ -320,6 +357,9 @@ int main(void)
 		
         // Print out the camera's location
         std::stringstream ssWindowText;
+        // Add this:
+        glm::vec3 eyePosition = ::g_pFlyCamera->getEyeLocation();
+
         ssWindowText << "Camera (xyz): "
             << eyePosition.x << ", "
             << eyePosition.y << ", "
@@ -330,11 +370,18 @@ int main(void)
         // Everything is drawn so "present" the "back buffer"
 
         glfwSwapBuffers(window);
+        // This is GLFWs thing that updates the mouse and keyboard
         glfwPollEvents();
+
+        // Update the async keyboard and mouse (for the fly camera)
+        handleMouseAsync(window);
+        handleKeyboardAsync(window);
     }
 
     // Clean things up
     delete ::g_pShaderManager;
+    delete ::g_pVAOManager;
+    delete ::g_pFlyCamera;
 
     glfwDestroyWindow(window);
 
@@ -361,33 +408,42 @@ static void key_callback(GLFWwindow* window,
         glfwSetWindowShouldClose(window, GLFW_TRUE);
     }
 
-    const float CAMERASPEED = 1.0f;
-    // Camera 
-    if (key == GLFW_KEY_W)          // Forward (along Z axis)
-    {
-        eyePosition.z += CAMERASPEED;
-    }
-    if (key == GLFW_KEY_S)          // Backwards
-    {
-        eyePosition.z -= CAMERASPEED;
-    }
-    if (key == GLFW_KEY_A)          // Left (along X axis)
-    {
-        eyePosition.x -= CAMERASPEED;
-    }
-    if (key == GLFW_KEY_D)          // Right
-    {
-        eyePosition.x += CAMERASPEED;
-    }
-    // Up and down
-    if (key == GLFW_KEY_Q)      // Up (along Y axis)
-    {
-        eyePosition.y += CAMERASPEED;
-    }
-    if (key == GLFW_KEY_E)      // Down?
-    {
-        eyePosition.y -= CAMERASPEED;
-    }
+    //if (key == GLFW_KEY_UP && action == GLFW_PRESS)
+    //{
+    //    g_MeshIndex++;
+    //}
+    //if (key == GLFW_KEY_DOWN)
+    //{
+    //    g_MeshIndex--;
+    //}
+
+ //   const float CAMERASPEED = 1.0f;
+ //   // Camera 
+ //   if (key == GLFW_KEY_W)          // Forward (along Z axis)
+ //   {
+ //       eyePosition.z += CAMERASPEED;
+ //   }
+ //   if (key == GLFW_KEY_S)          // Backwards
+ //   {
+ //       eyePosition.z -= CAMERASPEED;
+ //   }
+ //   if (key == GLFW_KEY_A)          // Left (along X axis)
+ //   {
+ //       eyePosition.x -= CAMERASPEED;
+ //   }
+ //   if (key == GLFW_KEY_D)          // Right
+ //   {
+ //       eyePosition.x += CAMERASPEED;
+ //   }
+ //   // Up and down
+ //   if (key == GLFW_KEY_Q)      // Up (along Y axis)
+ //   {
+ //       eyePosition.y += CAMERASPEED;
+ //   }
+ //   if (key == GLFW_KEY_E)      // Down?
+ //   {
+ //       eyePosition.y -= CAMERASPEED;
+ //   }
 
     return;
 }

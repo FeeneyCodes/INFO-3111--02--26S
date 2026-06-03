@@ -1,23 +1,14 @@
 // for non keyboard callback handling
 
-#include "globalOpenGL.h"
+#include "globalOpenGLStuff.h"     //globalOpenGL.h"
 #include <glm/glm.hpp>
 #include <glm/vec3.hpp>
 #include <iostream>
 
-#include "sharedThings.h"   // The camera, etc.
+//#include "sharedThings.h"   // The camera, etc.
+#include "globalStuff.h"
 
 //extern glm::vec3 g_cameraEye;
-
-//enum eState
-//{
-//    SUNSET,         // Is getting darker
-//    SUNRISE,        // Is getting brighter
-//    IS_DAY,         // Is full day (brightest)
-//    IS_NIGHT        // Is night time (darkest)
-//};
-
-eState g_DayNightState = IS_DAY;
 
 struct sMouseState
 {
@@ -261,9 +252,9 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
     // For most mice, the value is the DIFFERENCE between the last time this was called!
     // (i.e. it's not an absolute value)
     // It also goes up and down along the Y axis and is an integer
-    std::cout << "xoffset, yoffset: " << xoffset << ", " << yoffset << std::endl;
+//    std::cout << "xoffset, yoffset: " << xoffset << ", " << yoffset << std::endl;
 
-    const float MOUSE_WHEEL_RATIO = 0.1f;
+    const float MOUSE_WHEEL_RATIO = 0.01f;
 
     ::g_pFlyCamera->adjustMovementSpeed( float(yoffset) * MOUSE_WHEEL_RATIO );
 

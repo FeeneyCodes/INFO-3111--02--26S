@@ -22,6 +22,9 @@
     <Filter Include="Mesh">
       <UniqueIdentifier>{a5751d5f-3071-4bf8-969f-46481a2d38e7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="FlyCamera">
+      <UniqueIdentifier>{55e78161-43d7-48ca-8d75-5aefb0a6abba}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="theMain.cpp">
@@ -45,6 +48,12 @@
     <ClCompile Include="cMesh.cpp">
       <Filter>Mesh</Filter>
     </ClCompile>
+    <ClCompile Include="cBasicFlyCamera\cBasicFlyCamera.cpp">
+      <Filter>FlyCamera</Filter>
+    </ClCompile>
+    <ClCompile Include="mouse_keyboard_async.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="cShaderManager\cShaderManager.h">
@@ -61,6 +70,9 @@
     </ClInclude>
     <ClInclude Include="cMesh.h">
       <Filter>Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="cBasicFlyCamera\cBasicFlyCamera.h">
+      <Filter>FlyCamera</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
