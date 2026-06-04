@@ -7,6 +7,8 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <glm/glm.hpp>
+#include <glm/vec4.hpp>
 
 // The vertex structure, as it is in the SHADER (on the GPU)
 // This is also called the 'vertex layout'. 
@@ -15,13 +17,19 @@
 struct sVert
 {
 	// Vertex shader has:
-	float r, g, b;		// vCol
-	float x, y, z;		// vPos
+//	float r, g, b;		// vCol
+//	float x, y, z;		// vPos
+
+	// The shader vertex layout:
+	// in vec4 vertexColour;		// RGBA
+	// in vec4 vertexPosition;		// XYZ (w not used)
+	// in vec4 vertexNormal;		// XYZ (w not used)
+	// in vec4 vertexUVx2;			// 2 sets of UVs (because it's a vec4)
+	glm::vec4 vertexColour;		// RGBA
+	glm::vec4 vertexPosition;		// XYZ (w not used)
+	glm::vec4 vertexNormal;		// XYZ (w not used)
+	glm::vec4 vertexUVx2;			// 2 sets of UVs (because it's a vec4)
 };
-in vec4 vertexColour;		// RGBA
-in vec4 vertexPosition;		// XYZ (w not used)
-in vec4 vertexNormal;		// XYZ (w not used)
-in vec4 vertexUVx2;			// 2 sets of UVs (because it's a vec4)
 
 //float r, g, b, a;
 //float x, y, z, w;

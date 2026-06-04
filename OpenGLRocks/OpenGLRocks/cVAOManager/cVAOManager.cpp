@@ -112,31 +112,61 @@ bool cVAOManager::LoadModelIntoVAO(
                   GL_STATIC_DRAW );
 
 	// Set the vertex attributes.
-	in vec4 vertexColour;		// RGBA
-	in vec4 vertexPosition;		// XYZ (w not used)
-	in vec4 vertexNormal;		// XYZ (w not used)
-	in vec4 vertexUVx2;			// 2 sets of UVs (because it's a vec4)
 
 	// Find the vertex variables in the shader and get the locations...
 	// so: vPos and vCol should be in the shader...
-	GLint vpos_location = glGetAttribLocation(shaderProgramID, "vPos");	// program
-	GLint vcol_location = glGetAttribLocation(shaderProgramID, "vCol");	// program;
+//	GLint vpos_location = glGetAttribLocation(shaderProgramID, "vPos");	// program
+//	GLint vcol_location = glGetAttribLocation(shaderProgramID, "vCol");	// program;
+//
+//	// Set the vertex attributes for this shader
+//	// in the shader: "in vec3 vPos;"
+//	glEnableVertexAttribArray(vpos_location);	// vPos
+//	glVertexAttribPointer( vpos_location, 
+//		                   3,		// vPos
+//						   GL_FLOAT, GL_FALSE,
+//						   sizeof(sVert),	// Stride
+//						   (void*)offsetof(sVert, x) );// Offset
+//
+//	glEnableVertexAttribArray(vcol_location);	// vCol
+//	glVertexAttribPointer( vcol_location, 
+//		                   3,		// vCol
+//						   GL_FLOAT, GL_FALSE,
+//		                   sizeof(sVert),
+//						   (void*)offsetof(sVert, r) );	// "r" for Red
 
-	// Set the vertex attributes for this shader
-	// in the shader: "in vec3 vPos;"
-	glEnableVertexAttribArray(vpos_location);	// vPos
-	glVertexAttribPointer( vpos_location, 
-		                   3,		// vPos
-						   GL_FLOAT, GL_FALSE,
+
+	// in vec4 vertexColour;		// RGBA
+	// in vec4 vertexPosition;		// XYZ (w not used)
+	// in vec4 vertexNormal;		// XYZ (w not used)
+	// in vec4 vertexUVx2;			// 2 sets of UVs (because it's a vec4)
+	GLint vertexColour_location = glGetAttribLocation(shaderProgramID, "vertexColour");
+	glEnableVertexAttribArray(vertexColour_location);	
+	glVertexAttribPointer( vertexColour_location,
+		                   4, GL_FLOAT, GL_FALSE,
 						   sizeof(sVert),	// Stride
-						   (void*)offsetof(sVert, x) );// Offset
+						   (void*)offsetof(sVert, vertexColour.x) );// Offset
 
-	glEnableVertexAttribArray(vcol_location);	// vCol
-	glVertexAttribPointer( vcol_location, 
-		                   3,		// vCol
-						   GL_FLOAT, GL_FALSE,
-		                   sizeof(sVert),
-						   (void*)offsetof(sVert, r) );	// "r" for Red
+	GLint vertexPosition_location = glGetAttribLocation(shaderProgramID, "vertexPosition");
+	glEnableVertexAttribArray(vertexPosition_location);	
+	glVertexAttribPointer(vertexPosition_location,
+		                   4, GL_FLOAT, GL_FALSE,
+						   sizeof(sVert),	// Stride
+						   (void*)offsetof(sVert, vertexPosition.x) );// Offset
+
+	GLint vertexNormal_location = glGetAttribLocation(shaderProgramID, "vertexNormal");
+	glEnableVertexAttribArray(vertexNormal_location);
+	glVertexAttribPointer(vertexNormal_location,
+		                   4, GL_FLOAT, GL_FALSE,
+						   sizeof(sVert),	// Stride
+						   (void*)offsetof(sVert, vertexNormal.x) );// Offset
+
+	GLint vertexUVx2_location = glGetAttribLocation(shaderProgramID, "vertexUVx2");
+	glEnableVertexAttribArray(vertexUVx2_location);
+	glVertexAttribPointer(vertexUVx2_location,
+		                   4, GL_FLOAT, GL_FALSE,
+						   sizeof(sVert),	// Stride
+						   (void*)offsetof(sVert, vertexUVx2.x) );// Offset
+
 
 	// Now that all the parts are set up, set the VAO to zero
 	glBindVertexArray(0);
@@ -144,8 +174,12 @@ bool cVAOManager::LoadModelIntoVAO(
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-	glDisableVertexAttribArray(vpos_location);
-	glDisableVertexAttribArray(vcol_location);
+//	glDisableVertexAttribArray(vpos_location);
+//	glDisableVertexAttribArray(vcol_location);
+	glDisableVertexAttribArray(vertexColour_location);
+	glDisableVertexAttribArray(vertexPosition_location);
+	glDisableVertexAttribArray(vertexNormal_location);
+	glDisableVertexAttribArray(vertexUVx2_location);
 
 
 	// Store the draw information into the map
@@ -303,13 +337,31 @@ bool cVAOManager::m_LoadTheModel(std::string fileName,
 
 	for ( unsigned int index = 0; index != drawInfo.numberOfVertices; index++ )
 	{
-		drawInfo.pVertices[index].x = vecTempPlyVerts[index].positionXYZ.x;
-		drawInfo.pVertices[index].y = vecTempPlyVerts[index].positionXYZ.y;
-		drawInfo.pVertices[index].z = vecTempPlyVerts[index].positionXYZ.z;
+		drawInfo.pVertices[index].vertexPosition.x = vecTempPlyVerts[index].positionXYZ.x;
+		drawInfo.pVertices[index].vertexPosition.y = vecTempPlyVerts[index].positionXYZ.y;
+		drawInfo.pVertices[index].vertexPosition.z = vecTempPlyVerts[index].positionXYZ.z;
+		// If you aren't sure what to set the 4th value to, set it to 1.0f
+		drawInfo.pVertices[index].vertexPosition.w = 1.0f;
 
-		drawInfo.pVertices[index].r = 1.0f;		// vecTempPlyVerts[index].colour.r;
-		drawInfo.pVertices[index].g = 1.0f;		// vecTempPlyVerts[index].colour.g;
-		drawInfo.pVertices[index].b = 1.0f;		// vecTempPlyVerts[index].colour.b;
+		drawInfo.pVertices[index].vertexColour.r = 1.0f;		// vecTempPlyVerts[index].colour.r;
+		drawInfo.pVertices[index].vertexColour.g = 1.0f;		// vecTempPlyVerts[index].colour.g;
+		drawInfo.pVertices[index].vertexColour.b = 1.0f;		// vecTempPlyVerts[index].colour.b;
+		// If you aren't sure what to set the 4th value to, set it to 1.0f
+		drawInfo.pVertices[index].vertexColour.a = 1.0f;
+
+		// Copy normals
+		drawInfo.pVertices[index].vertexNormal.x = vecTempPlyVerts[index].normalXYZ.x;
+		drawInfo.pVertices[index].vertexNormal.y = vecTempPlyVerts[index].normalXYZ.y;
+		drawInfo.pVertices[index].vertexNormal.z = vecTempPlyVerts[index].normalXYZ.z;
+		// If you aren't sure what to set the 4th value to, set it to 1.0f
+		drawInfo.pVertices[index].vertexNormal.w = 1.0f;
+
+		// For now, set the UVs to 0.0f;
+		drawInfo.pVertices[index].vertexUVx2.x = 1.0f;
+		drawInfo.pVertices[index].vertexUVx2.y = 1.0f;
+		drawInfo.pVertices[index].vertexUVx2.z = 1.0f;
+		drawInfo.pVertices[index].vertexUVx2.w = 1.0f;
+
 	}// for ( unsigned int index...
 
 

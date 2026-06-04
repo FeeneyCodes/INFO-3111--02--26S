@@ -5,15 +5,28 @@
 uniform mat4 mModel;
 uniform mat4 mView;
 uniform mat4 mProj;
+
 // Vertices are coming in here...
-in vec3 vCol;
-in vec3 vPos;
-// Going out here
-out vec3 color;
+in vec4 vertexColour;		// RGBA
+in vec4 vertexPosition;		// XYZ (w not used)
+in vec4 vertexNormal;		// XYZ (w not used)
+in vec4 vertexUVx2;			// 2 sets of UVs (because it's a vec4)
+
+out vec4 vModelColour;
+out vec4 vNormal;
+out vec4 vWorldPosition;
+out vec4 vVertexUVx2;
 
 void main()
 {
 	mat4 MVP = mProj * mView * mModel;
-	gl_Position = MVP * vec4(vPos, 1.0);
-	color = vCol;
+	gl_Position = MVP * vertexPosition;
+	
+	// This will be changed later.
+	// For now, just pass it along.
+	vNormal = vertexNormal;
+	
+	// Copy these unchanged
+	vModelColour = vertexColour;
+	vVertexUVx2 = vertexUVx2;
 }

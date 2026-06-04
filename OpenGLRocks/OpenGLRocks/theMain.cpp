@@ -160,8 +160,13 @@ int main(void)
     cMesh* pTerrain = new cMesh("Terrain_xyz_n.ply");
     pTerrain->diffuseRGB = glm::vec3(1.0f, 1.0f, 1.0f);
     pTerrain->bIsWireframe = true;
+    // This is set so that the models are in a "low" point on the terrain.
+    // The terrain is also rotated to put a "low" point under the models.
     pTerrain->rotation.x = glm::radians<float>(-90.0f);
-    pTerrain->position.y = -40.0f;
+    pTerrain->rotation.y = glm::radians<float>(90.0f);
+    pTerrain->position.y = -30.0f;
+    pTerrain->position.z = 200.0f;
+    pTerrain->scale = 2.0f;
     ::g_vec_pModelsToDraw.push_back(pTerrain);
 
 
@@ -228,7 +233,7 @@ int main(void)
             glm::radians(60.0f),        // FOV
             (float)width / (float)height, // Aspect ratio
             0.1f,            // Near plane
-            1000.0f);         // Far plane
+            10000.0f);         // Far plane
 
         // uniform mat4 mView;
         // uniform mat4 mProj;
