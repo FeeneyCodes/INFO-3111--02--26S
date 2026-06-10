@@ -22,9 +22,15 @@ void main()
 	mat4 MVP = mProj * mView * mModel;
 	gl_Position = MVP * vertexPosition;
 	
-	// This will be changed later.
-	// For now, just pass it along.
-	vNormal = vertexNormal;
+	// World position of this vertex
+	vWorldPosition = mModel * vertexPosition;
+	
+	// Calculating the "inverse transpose" of the model matrix
+	// (which takes away any translation and scaling and leaves ONLY rotation)
+	vNormal = inverse(transpose(mModel)) * vertexNormal;
+	// Make sure the normal is STILL a unit length 
+	// (aka "noramlized")
+	vNormal = normalize(vNormal);
 	
 	// Copy these unchanged
 	vModelColour = vertexColour;

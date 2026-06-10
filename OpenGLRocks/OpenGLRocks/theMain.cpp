@@ -34,16 +34,7 @@ cVAOManager* g_pVAOManager = NULL;
 
 cBasicFlyCamera* g_pFlyCamera = NULL;
 
-//struct Vertex
-//{
-//    glm::vec3 position;      // vec2 pos;  x, y
-//    glm::vec3 colour;       // 0.0 - 1.0   0-255
-//};
-//
-//Vertex* g_VerticesToDraw = NULL;
-//unsigned long g_NumberOfVerticesToDraw = 0;
-
-
+cLightManager* g_pLightManager = NULL;
 
 //glm::vec3 eyePosition = glm::vec3(0.0f, 0.0f, -10.0f);
 //glm::vec3 atPosition = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -157,12 +148,14 @@ int main(void)
 
     // Add some models to draw...
     cMesh* pDeadDwarf = new cMesh("SM_Prop_DeadBody_Dwarf_01.ply");
-    pDeadDwarf->bIsWireframe = true;
+    //pDeadDwarf->bIsWireframe = true;
+    pDeadDwarf->scale = 0.1f;
+    pDeadDwarf->position.z = 50.0f;
     ::g_vec_pModelsToDraw.push_back(pDeadDwarf);
 
     cMesh* pTerrain = new cMesh("Terrain_xyz_n.ply");
     pTerrain->diffuseRGB = glm::vec3(1.0f, 1.0f, 1.0f);
-    pTerrain->bIsWireframe = true;
+    //pTerrain->bIsWireframe = true;
     // This is set so that the models are in a "low" point on the terrain.
     // The terrain is also rotated to put a "low" point under the models.
     pTerrain->rotation.x = glm::radians<float>(-90.0f);
@@ -185,7 +178,7 @@ int main(void)
     pShuttle->scale = 1.0f / 200.0f;
     pShuttle->rotation.x = glm::radians<float>(-90.0f);
     pShuttle->diffuseRGB = glm::vec3(0.56f, 0.8f, 0.1f);
-    pShuttle->bIsWireframe = true;
+    //pShuttle->bIsWireframe = true;
 
     cMesh* pBunny = new cMesh("bun_zipper_XYZ_N.ply");
     pBunny->position.x = -3.0f;
@@ -209,8 +202,22 @@ int main(void)
     ::g_pFlyCamera->setEyeLocation(0.0f, 0.0f, -10.0f);
 
 
+    // Create the light manager, too
+    ::g_pLightManager = new cLightManager();
 
-    const GLint mvp_location = glGetUniformLocation(program, "MVP");
+    ::g_pLightManager->SetUpUniformShaderLocations(program);
+
+    ::g_pLightManager->myLights[0].bIsOn = true;
+    // Just above the origin
+    ::g_pLightManager->myLights[0].position = glm::vec3(0.0f, 20.0f, 0.0f);
+    // Light is white coloured
+    ::g_pLightManager->myLights[0].diffuseRGBA = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+    // 
+    ::g_pLightManager->myLights[0].lightType = sLight::POINT_LIGHT;
+
+
+
+//    const GLint mvp_location = glGetUniformLocation(program, "MVP");
  
     while (!glfwWindowShouldClose(window))
     {
@@ -221,7 +228,10 @@ int main(void)
         glViewport(0, 0, width, height);
         // Clear the screen
         //glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
-        glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
+        glEnable(GL_DEPTH_TEST);    // Turn on depth checking
+        glDepthFunc(GL_LESS);       // The compare function
 
         // Proection and View (camera) only changes once per scene draw
 
@@ -251,6 +261,10 @@ int main(void)
         glUniformMatrix4fv( mProj_UL, 1, GL_FALSE,
                             (const GLfloat*)&matProjection);
 
+
+
+        // Copy light infor for this frame
+        ::g_pLightManager->CopyLightInfoToShader(program);
 
         for ( std::vector< cMesh* >::iterator it_pMesh = ::g_vec_pModelsToDraw.begin();
               it_pMesh != ::g_vec_pModelsToDraw.end();

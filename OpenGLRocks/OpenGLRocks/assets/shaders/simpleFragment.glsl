@@ -6,6 +6,7 @@ in vec4 vNormal;
 in vec4 vWorldPosition;
 in vec4 vVertexUVx2;
 
+// Out to the screen (back buffer)
 out vec4 fragment;
 
 uniform vec3 colourRGB;
@@ -31,14 +32,30 @@ struct sLight
 };
 
 const int NUMBEROFLIGHTS = 8;
-sLight theLights[NUMBEROFLIGHTS];
+uniform sLight theLights[NUMBEROFLIGHTS];
+
+vec4 calcualteLightContrib( vec3 vertexMaterialColour, vec3 vertexNormal, 
+                            vec3 vertexWorldPos, vec4 vertexSpecular );
 
 void main()
 {
 	//fragment = vec4(color, 1.0);
+//	vec3 theColour = vModelColour.rgb * 0.00001f;
+//	theColour.rgb += colourRGB.rgb;
+//	fragment = vec4(theColour, 1.0);
+
 	vec3 theColour = vModelColour.rgb * 0.00001f;
 	theColour.rgb += colourRGB.rgb;
-	fragment = vec4(theColour, 1.0);
+	
+	float vertexSpecPower = 1.0f;  // from 1 to 100,000
+	vec4 vertexSpecular = vec4(1.0f, 1.0f, 1.0f, vertexSpecPower);
+	
+	fragment = calcualteLightContrib( theColour, 
+	                                  vNormal.xyz, 
+									  vWorldPosition.xyz, 
+									  vertexSpecular);
+
+
 }
 
 

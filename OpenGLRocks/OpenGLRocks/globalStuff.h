@@ -16,6 +16,7 @@
 #include "cMesh.h"
 #include <vector>
 #include "cBasicFlyCamera/cBasicFlyCamera.h"
+#include "cLightManager.h"
 
 
 
@@ -27,4 +28,6 @@ extern std::vector< cMesh* > g_vec_pModelsToDraw;
 
 // Notice this is a pointer. (is in theMain.cpp)
 extern cBasicFlyCamera* g_pFlyCamera;
+
+extern cLightManager* g_pLightManager;
 
