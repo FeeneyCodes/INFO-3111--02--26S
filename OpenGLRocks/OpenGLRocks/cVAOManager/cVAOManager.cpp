@@ -51,8 +51,10 @@ void cVAOManager::setBasePath(std::string newBasePath)
 bool cVAOManager::LoadModelIntoVAO(
 		std::string fileName, 
 		sModelDrawInfo &drawInfo,
-	    unsigned int shaderProgramID)
-
+	    unsigned int shaderProgramID,
+	    bool bHasNormals,
+	    bool bHasRGBAColours,
+	    bool bHasUVCoords)
 {
 	// Load the model from file
 	// (We do this here, since if we can't load it, there's 
@@ -62,7 +64,7 @@ bool cVAOManager::LoadModelIntoVAO(
 
 	std::string fullFileNameWithPath = this->m_FileBasePath + "/" + fileName;
 
-	if ( ! this->m_LoadTheModel( fullFileNameWithPath, drawInfo ) )
+	if ( ! this->m_LoadTheModel( fullFileNameWithPath, drawInfo, bHasNormals, bHasRGBAColours, bHasUVCoords ) )
 	{
 		this->m_AppendTextToLastError( "Didn't load model", true );
 		return false;
@@ -214,7 +216,10 @@ bool cVAOManager::FindDrawInfoByModelName(
 
 
 bool cVAOManager::m_LoadTheModel(std::string fileName,
-								 sModelDrawInfo &drawInfo )
+								 sModelDrawInfo &drawInfo, 
+	                             bool bHasNormals,
+	                             bool bHasRGBAColours,
+	                             bool bHasUVCoords)
 {
 	// Open the file. 
 	// Read until we hit the word "vertex"
@@ -267,18 +272,23 @@ bool cVAOManager::m_LoadTheModel(std::string fileName,
 	// The idea is this matches the vertex layout in the file
 	struct sVertPly
 	{
-		//glm::vec3 pos;
-		//glm::vec4 colour;
-		// The mig file is xyz, nx,ny,nz
-		//element vertex 3014
-		//property float x
-		//property float y
-		//property float z
-		//property float nx
-		//property float ny
-		//property float nz
 		glm::vec3 positionXYZ;
+		// property float x
+		// property float y
+		//property float z
 		glm::vec3 normalXYZ;
+		// property float nx
+		// property float ny
+		// property float nz
+		glm::vec4 diffuseRGBA;
+		// property uchar red
+		// property uchar green
+		// property uchar blue
+		// property uchar alpha
+		glm::vec2 textureUV;
+		// property float texture_u
+		// property float texture_v
+		// Add these, too
 	};
 
 	std::vector<sVertPly> vecTempPlyVerts;
@@ -292,33 +302,52 @@ bool cVAOManager::m_LoadTheModel(std::string fileName,
 		thePlyFile >> tempVert.positionXYZ.y;
 		thePlyFile >> tempVert.positionXYZ.z;
 
-		//// HACK
-		//if (fileName == "assets/models/SpaceShuttleOrbiter_xyz_n.ply")
-		//{
-		//	tempVert.positionXYZ.x /= 100.0f;
-		//	tempVert.positionXYZ.y /= 100.0f;
-		//	tempVert.positionXYZ.z /= 100.0f;
+		if (bHasNormals)
+		{
+			// Load the normals from the file...
+			thePlyFile >> tempVert.normalXYZ.x;
+			thePlyFile >> tempVert.normalXYZ.y;
+			thePlyFile >> tempVert.normalXYZ.z;
+		}
+		else
+		{
+			// Else set the normals to zero
+			tempVert.normalXYZ.x = 0.0f;
+			tempVert.normalXYZ.y = 0.0f;
+			tempVert.normalXYZ.z = 0.0f;
+		}
 
-		//	tempVert.positionXYZ.x += 5.0f;
-		//}
+		if (bHasRGBAColours)
+		{
+			thePlyFile >> tempVert.diffuseRGBA.r;	// 0 to 255
+			thePlyFile >> tempVert.diffuseRGBA.g;
+			thePlyFile >> tempVert.diffuseRGBA.b;
+			thePlyFile >> tempVert.diffuseRGBA.a;
 
-		//if (fileName == "assets/models/mig29.ply")
-		//{
-		//	tempVert.positionXYZ.x -= 3.0f;
-		//}
+			// Scale colours to 0 to 1, instead of 0 to 255
+			tempVert.diffuseRGBA.r /= 255.0f;
+			tempVert.diffuseRGBA.g /= 255.0f;
+			tempVert.diffuseRGBA.b /= 255.0f;
+			tempVert.diffuseRGBA.a /= 255.0f;	// Transparency
+		}
+		else
+		{
+			tempVert.diffuseRGBA.r = 1.0f;
+			tempVert.diffuseRGBA.g = 1.0f;
+			tempVert.diffuseRGBA.b = 1.0f;
+			tempVert.diffuseRGBA.a = 1.0f;
+		}
 
-		thePlyFile >> tempVert.normalXYZ.x;
-		thePlyFile >> tempVert.normalXYZ.y;
-		thePlyFile >> tempVert.normalXYZ.z;
-		
-		
-		//thePlyFile >> tempVert.colour.x >> tempVert.colour.y
-		//	       >> tempVert.colour.z >> tempVert.colour.w; 
-
-		//// Scale the colour from 0 to 1, instead of 0 to 255
-		//tempVert.colour.x /= 255.0f;
-		//tempVert.colour.y /= 255.0f;
-		//tempVert.colour.z /= 255.0f;
+		if (bHasUVCoords)
+		{
+			thePlyFile >> tempVert.textureUV.x;
+			thePlyFile >> tempVert.textureUV.y;
+		}
+		else
+		{
+			tempVert.textureUV.x = 0.0f;
+			tempVert.textureUV.y = 0.0f;
+		}
 
 		// Add too... what? 
 		vecTempPlyVerts.push_back(tempVert);
@@ -343,11 +372,11 @@ bool cVAOManager::m_LoadTheModel(std::string fileName,
 		// If you aren't sure what to set the 4th value to, set it to 1.0f
 		drawInfo.pVertices[index].vertexPosition.w = 1.0f;
 
-		drawInfo.pVertices[index].vertexColour.r = 1.0f;		// vecTempPlyVerts[index].colour.r;
-		drawInfo.pVertices[index].vertexColour.g = 1.0f;		// vecTempPlyVerts[index].colour.g;
-		drawInfo.pVertices[index].vertexColour.b = 1.0f;		// vecTempPlyVerts[index].colour.b;
+		drawInfo.pVertices[index].vertexColour.r = vecTempPlyVerts[index].diffuseRGBA.r;
+		drawInfo.pVertices[index].vertexColour.g = vecTempPlyVerts[index].diffuseRGBA.g;
+		drawInfo.pVertices[index].vertexColour.b = vecTempPlyVerts[index].diffuseRGBA.b;
 		// If you aren't sure what to set the 4th value to, set it to 1.0f
-		drawInfo.pVertices[index].vertexColour.a = 1.0f;
+		drawInfo.pVertices[index].vertexColour.a = vecTempPlyVerts[index].diffuseRGBA.a;
 
 		// Copy normals
 		drawInfo.pVertices[index].vertexNormal.x = vecTempPlyVerts[index].normalXYZ.x;
@@ -357,10 +386,10 @@ bool cVAOManager::m_LoadTheModel(std::string fileName,
 		drawInfo.pVertices[index].vertexNormal.w = 1.0f;
 
 		// For now, set the UVs to 0.0f;
-		drawInfo.pVertices[index].vertexUVx2.x = 1.0f;
-		drawInfo.pVertices[index].vertexUVx2.y = 1.0f;
-		drawInfo.pVertices[index].vertexUVx2.z = 1.0f;
-		drawInfo.pVertices[index].vertexUVx2.w = 1.0f;
+		drawInfo.pVertices[index].vertexUVx2.x = vecTempPlyVerts[index].textureUV.x;
+		drawInfo.pVertices[index].vertexUVx2.y = vecTempPlyVerts[index].textureUV.y;
+		drawInfo.pVertices[index].vertexUVx2.z = vecTempPlyVerts[index].textureUV.x;
+		drawInfo.pVertices[index].vertexUVx2.w = vecTempPlyVerts[index].textureUV.y;
 
 	}// for ( unsigned int index...
 

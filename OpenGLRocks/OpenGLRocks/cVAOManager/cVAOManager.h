@@ -71,25 +71,28 @@ class cVAOManager
 public:
 	bool LoadModelIntoVAO(std::string fileName, 
 						  sModelDrawInfo &drawInfo, 
-						  unsigned int shaderProgramID);
-
-
-	bool LoadModelIntoVAO(std::string fileName, 
-						  sModelDrawInfo &drawInfo, 
 						  unsigned int shaderProgramID,
-		                  bool bHasNormals, bool bHasColours);
+		                  bool bHasNormals, 
+		                  bool bHasRGBAColours,
+		                  bool bHasUVCoords);
 
-	bool LoadModelIntoVAO_with_XYZ();
-	bool LoadModelIntoVAO_with_XYZ_N();
-	bool LoadModelIntoVAO_with_XYZ_Colours();
 
-	bool LoadModelIntoVAO(std::string fileName, 
-						  unsigned int shaderProgramID);
+	//bool LoadModelIntoVAO(std::string fileName, 
+	//					  sModelDrawInfo &drawInfo, 
+	//					  unsigned int shaderProgramID,
+	//	                  bool bHasNormals, bool bHasColours);
+
+	//bool LoadModelIntoVAO_with_XYZ();
+	//bool LoadModelIntoVAO_with_XYZ_N();
+	//bool LoadModelIntoVAO_with_XYZ_Colours_N_UV();
+
+	//bool LoadModelIntoVAO(std::string fileName, 
+	//					  unsigned int shaderProgramID);
 
 	// Same as above, but you pass a vector of strings. 
 	// (it just calls LoadModelIntoVAO over and over)
-	bool LoadModelsIntoVAO(std::vector< std::string > vecFileNames,
-	                       unsigned int shaderProgramID);
+	//bool LoadModelsIntoVAO(std::vector< std::string > vecFileNames,
+	//                       unsigned int shaderProgramID);
 
 	//bool LoadModelIntoVAO(std::string fileName, 
 	//					  sModelDrawInfo &drawInfo, 
@@ -113,7 +116,10 @@ private:
 
 	// Loads the ply model file into a temporary array
 	bool m_LoadTheModel( std::string fileName, 
-						 sModelDrawInfo &drawInfo);
+						 sModelDrawInfo &drawInfo,
+						 bool bHasNormals,
+						 bool bHasRGBAColours,
+						 bool bHasUVCoords);
 
 	std::string m_lastErrorString;
 	void m_AppendTextToLastError(std::string text, bool addNewLineBefore = true);

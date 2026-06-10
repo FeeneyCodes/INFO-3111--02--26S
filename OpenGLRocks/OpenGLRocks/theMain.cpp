@@ -156,6 +156,9 @@ int main(void)
     LoadTheModels(::g_pVAOManager, program);
 
     // Add some models to draw...
+    cMesh* pDeadDwarf = new cMesh("SM_Prop_DeadBody_Dwarf_01.ply");
+    pDeadDwarf->bIsWireframe = true;
+    ::g_vec_pModelsToDraw.push_back(pDeadDwarf);
 
     cMesh* pTerrain = new cMesh("Terrain_xyz_n.ply");
     pTerrain->diffuseRGB = glm::vec3(1.0f, 1.0f, 1.0f);
