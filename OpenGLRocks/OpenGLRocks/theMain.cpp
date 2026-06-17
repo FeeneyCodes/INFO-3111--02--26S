@@ -155,6 +155,7 @@ int main(void)
 
     cMesh* pTerrain = new cMesh("Terrain_xyz_n.ply");
     pTerrain->diffuseRGB = glm::vec3(1.0f, 1.0f, 1.0f);
+    pTerrain->specularPower = 10000.0f;
     //pTerrain->bIsWireframe = true;
     // This is set so that the models are in a "low" point on the terrain.
     // The terrain is also rotated to put a "low" point under the models.
@@ -178,6 +179,9 @@ int main(void)
     pShuttle->scale = 1.0f / 200.0f;
     pShuttle->rotation.x = glm::radians<float>(-90.0f);
     pShuttle->diffuseRGB = glm::vec3(0.56f, 0.8f, 0.1f);
+    //
+    pShuttle->specularHighlightColourRGB = glm::vec3(1.0f, 1.0f, 1.0f);
+    pShuttle->specularPower = 1000.0f;
     //pShuttle->bIsWireframe = true;
 
     cMesh* pBunny = new cMesh("bun_zipper_XYZ_N.ply");
@@ -214,6 +218,11 @@ int main(void)
     ::g_pLightManager->myLights[0].diffuseRGBA = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
     // 
     ::g_pLightManager->myLights[0].lightType = sLight::POINT_LIGHT;
+
+    ::g_pLightManager->myLights[0].attenuationConstant = 0.0f;
+    ::g_pLightManager->myLights[0].attenuationLinear = 0.01f;
+    ::g_pLightManager->myLights[0].attenuationQuadratic = 0.001f;
+
 
 
 
@@ -265,6 +274,15 @@ int main(void)
 
         // Copy light infor for this frame
         ::g_pLightManager->CopyLightInfoToShader(program);
+
+        // Tell shader where the camera eye is (for specular)
+        // uniform vec3 eyeLocation;
+        GLint eyeLocation_UL = glGetUniformLocation(program, "eyeLocation");
+        glm::vec3 theEyeLocation = ::g_pFlyCamera->getEyeLocation();
+        glUniform3f(eyeLocation_UL,
+                    theEyeLocation.x, theEyeLocation.y, theEyeLocation.z);
+
+
 
         for ( std::vector< cMesh* >::iterator it_pMesh = ::g_vec_pModelsToDraw.begin();
               it_pMesh != ::g_vec_pModelsToDraw.end();
@@ -361,6 +379,21 @@ int main(void)
                          pCurrentMesh->diffuseRGB.r,
                          pCurrentMesh->diffuseRGB.g,
                          pCurrentMesh->diffuseRGB.b);
+
+            // Copy specular also
+            //  uniform vec3 specularRGB;		// Colour of the highlight
+            //  uniform float specularPower;	// How "shiny" it is (1.0 to	0)
+
+            GLint specularRGB_UL = glGetUniformLocation(program, "specularRGB");
+            GLint specularPower_UL = glGetUniformLocation(program, "specularPower");
+
+            glUniform3f( specularRGB_UL, 
+                         pCurrentMesh->specularHighlightColourRGB.r, 
+                         pCurrentMesh->specularHighlightColourRGB.g, 
+                         pCurrentMesh->specularHighlightColourRGB.b );
+
+            glUniform1f(specularPower_UL, pCurrentMesh->specularPower);
+
 
             if (pCurrentMesh->bIsWireframe)
             {

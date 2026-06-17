@@ -17,7 +17,15 @@ public:
 	float scale = 1.0f;
 	//
 	glm::vec3 diffuseRGB = glm::vec3(1.0f, 1.0f, 1.0f);
-	//glm::vec3 specularRGBP;
+	// specular or "shininess"
+	glm::vec3 specularHighlightColourRGB = glm::vec3(1.0f, 1.0f, 1.0f);
+	// 1.0 = not shiny at all
+	// 10 = a wee bit 
+	// 100 = even more
+	// 10,000 = very shiny
+	float specularPower = 1.0f;
+
+
 	bool bIsWireframe = false;
 	// 
 	float alphaTransparency = 1.0f;

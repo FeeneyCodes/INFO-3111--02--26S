@@ -9,7 +9,10 @@ in vec4 vVertexUVx2;
 // Out to the screen (back buffer)
 out vec4 fragment;
 
+// Colour of the entire model
 uniform vec3 colourRGB;
+uniform vec3 specularRGB;		// Colour of the highlight
+uniform float specularPower;	// How "shiny" it is (1.0 to	0)
 
 uniform vec3 eyeLocation;
 
@@ -34,6 +37,7 @@ struct sLight
 const int NUMBEROFLIGHTS = 8;
 uniform sLight theLights[NUMBEROFLIGHTS];
 
+
 vec4 calcualteLightContrib( vec3 vertexMaterialColour, vec3 vertexNormal, 
                             vec3 vertexWorldPos, vec4 vertexSpecular );
 
@@ -47,9 +51,9 @@ void main()
 	vec3 theColour = vModelColour.rgb * 0.00001f;
 	theColour.rgb += colourRGB.rgb;
 	
-	float vertexSpecPower = 1.0f;  // from 1 to 100,000
-	vec4 vertexSpecular = vec4(1.0f, 1.0f, 1.0f, vertexSpecPower);
-	
+	//float vertexSpecPower = 1.0f;  // from 1 to 100,000
+	vec4 vertexSpecular = vec4(specularRGB, specularPower);
+		
 	fragment = calcualteLightContrib( theColour, 
 	                                  vNormal.xyz, 
 									  vWorldPosition.xyz, 

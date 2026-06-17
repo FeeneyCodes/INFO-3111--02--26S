@@ -9,6 +9,7 @@ struct sLight
 {
 	glm::vec3 position = glm::vec3(0.0f);	
 	glm::vec4 diffuseRGBA = glm::vec4(1.0f);
+	// We likely won't use this ON THE LIGHT
 	glm::vec3 specularHighlightColour = glm::vec3(1.0f);
 	float specularPower = 1.0f;	
 	//vec4 atten;		// x = constant, y = linear, z = quadratic, w = DistanceCutOff

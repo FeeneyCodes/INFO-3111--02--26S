@@ -33,7 +33,23 @@ void cLightManager::SetUpUniformShaderLocations(unsigned int shdaerProgramID)
 
 	this->myLights[1].diffuse_UL
 		= glGetUniformLocation(shdaerProgramID, "theLights[1].diffuse");
-	// And so on...
+
+	this->myLights[1].specular_UL
+		= glGetUniformLocation(shdaerProgramID, "theLights[1].specular");
+
+	this->myLights[1].atten_UL
+		= glGetUniformLocation(shdaerProgramID, "theLights[1].atten");
+
+	this->myLights[1].direction_UL
+		= glGetUniformLocation(shdaerProgramID, "theLights[1].direction");
+
+	this->myLights[1].param1_UL
+		= glGetUniformLocation(shdaerProgramID, "theLights[1].param1");
+
+	this->myLights[1].param2_UL
+		= glGetUniformLocation(shdaerProgramID, "theLights[1].param2");
+
+	// And so on for the remaining light...
 
 }
 

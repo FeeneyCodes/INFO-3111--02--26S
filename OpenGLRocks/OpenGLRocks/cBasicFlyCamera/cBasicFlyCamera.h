@@ -61,6 +61,6 @@ private:
 	const glm::vec3 m_RIGHT_SIDE_OF_CAMERA = glm::vec3(1.0f, 0.0f, 0.0f);
 
 	const float MAX_MOVEMENT_SPEED = 100.0f;
-	const float MIN_MOVEMENT_SPEED = 0.01f;
+	const float MIN_MOVEMENT_SPEED = 0.001f;
 
 };
