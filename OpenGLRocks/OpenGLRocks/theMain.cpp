@@ -158,7 +158,8 @@ int main(void)
     pDeadDwarf->position.z = 50.0f;
     ::g_vec_pModelsToDraw.push_back(pDeadDwarf);
 
-    cMesh* pTerrain = new cMesh("Terrain_xyz_n.ply");
+    //cMesh* pTerrain = new cMesh("Terrain_xyz_n.ply");
+    cMesh* pTerrain = new cMesh("Terrain_xyz_n_rgba_uv.ply");
     pTerrain->diffuseRGB = glm::vec3(1.0f, 1.0f, 1.0f);
     pTerrain->specularPower = 10000.0f;
     //pTerrain->bIsWireframe = true;
@@ -172,7 +173,8 @@ int main(void)
     ::g_vec_pModelsToDraw.push_back(pTerrain);
 
 
-    cMesh* pMig = new cMesh("mig29.ply");
+    //cMesh* pMig = new cMesh("mig29.ply");
+    cMesh* pMig = new cMesh("mig29_xyz_n_rgba_uv.ply");
     pMig->position.x = 5.0f;
     pMig->position.y = 0.1f;
     pMig->position.z = 0.7f;
@@ -180,7 +182,8 @@ int main(void)
     pMig->scale = 1.0f;
     pMig->diffuseRGB = glm::vec3(0.7f, 1.0f, 0.3f);
 
-    cMesh* pShuttle = new cMesh("SpaceShuttleOrbiter_xyz_n.ply");
+    //cMesh* pShuttle = new cMesh("SpaceShuttleOrbiter_xyz_n.ply");
+    cMesh* pShuttle = new cMesh("SpaceShuttleOrbiter_xyz_n_rgba_uv.ply");
     pShuttle->scale = 1.0f / 200.0f;
     pShuttle->rotation.x = glm::radians<float>(-90.0f);
     pShuttle->diffuseRGB = glm::vec3(0.56f, 0.8f, 0.1f);
@@ -190,12 +193,14 @@ int main(void)
     pShuttle->specularPower = 1000.0f;
     //pShuttle->bIsWireframe = true;
 
-    cMesh* pBunny = new cMesh("bun_zipper_XYZ_N.ply");
+//    cMesh* pBunny = new cMesh("bun_zipper_XYZ_N.ply");
+    cMesh* pBunny = new cMesh("bun_zipper_XYZ_N_rgba_uv.ply");
     pBunny->position.x = -3.0f;
     pBunny->scale = 2.0f;
     pBunny->diffuseRGB = glm::vec3(0.3f, 0.26f, 0.56f);
 
-    cMesh* pBunny2 = new cMesh("bun_zipper_XYZ_N.ply");
+    //cMesh* pBunny2 = new cMesh("bun_zipper_XYZ_N.ply");
+    cMesh* pBunny2 = new cMesh("bun_zipper_XYZ_N_rgba_uv.ply");
     pBunny2->position.x = -3.0f;
     pBunny2->position.y = 2.0f;
     pBunny2->scale = 2.5f;

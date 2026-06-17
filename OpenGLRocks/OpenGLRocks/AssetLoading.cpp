@@ -7,7 +7,8 @@ void LoadTheModels(cVAOManager* pVAOManager, unsigned int shaderProgramID)
     pVAOManager->setBasePath("assets/models");
 
     sModelDrawInfo migModelInfo;
-    if (pVAOManager->LoadModelIntoVAO("mig29_xyz_n.ply",
+    //if (pVAOManager->LoadModelIntoVAO("mig29_xyz_n.ply",
+    if (pVAOManager->LoadModelIntoVAO("mig29_xyz_n_rgba_uv.ply",
         migModelInfo,
         shaderProgramID, true, false, false))
     {
@@ -18,16 +19,18 @@ void LoadTheModels(cVAOManager* pVAOManager, unsigned int shaderProgramID)
 
     // Load 
     sModelDrawInfo shuttleModelInfo;
-    pVAOManager->LoadModelIntoVAO("SpaceShuttleOrbiter_xyz_n.ply", 
-        shuttleModelInfo, shaderProgramID, true, false, false);
+    //pVAOManager->LoadModelIntoVAO("SpaceShuttleOrbiter_xyz_n.ply", 
+    pVAOManager->LoadModelIntoVAO("SpaceShuttleOrbiter_xyz_n_rgba_uv.ply", 
+        shuttleModelInfo, shaderProgramID, true, true, true);
 
     sModelDrawInfo bunnyModelInfo;
     pVAOManager->LoadModelIntoVAO("bun_zipper_XYZ_N_rgba_uv.ply", 
         bunnyModelInfo, shaderProgramID, true, true, true);
 
     sModelDrawInfo terrainModelInfo;
-    pVAOManager->LoadModelIntoVAO("Terrain_xyz_n.ply", 
-        terrainModelInfo, shaderProgramID, true, false, false);
+    //pVAOManager->LoadModelIntoVAO("Terrain_xyz_n.ply", 
+    pVAOManager->LoadModelIntoVAO("Terrain_xyz_n_rgba_uv.ply", 
+        terrainModelInfo, shaderProgramID, true, true, true);
 
     // The dungeon models from project #1
     pVAOManager->setBasePath("assets/models/Dungeon_models/Dead bodies, etc");
