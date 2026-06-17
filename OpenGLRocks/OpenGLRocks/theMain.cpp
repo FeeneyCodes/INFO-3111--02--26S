@@ -225,6 +225,16 @@ int main(void)
        
 
 
+    cMesh* pWarehouse = new cMesh("Warehouse_xyz_n_rgba_UV (Blender Smart UV project).ply");
+    pWarehouse->diffuseRGB = glm::vec3(1.0f, 1.0f, 1.0f);
+    pWarehouse->position = glm::vec3(0.0f);
+    pWarehouse->friendlyName = "Warehouse";
+    ::g_vec_pModelsToDraw.push_back(pWarehouse);
+
+
+
+
+
     ::g_vec_pModelsToDraw.push_back( pMig );
     ::g_vec_pModelsToDraw.push_back( pShuttle );
     ::g_vec_pModelsToDraw.push_back(pBunny);

@@ -63,6 +63,9 @@
     <ClCompile Include="DrawMesh.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="cLightHelper\cLightHelper.cpp">
+      <Filter>LightManager</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="cShaderManager\cShaderManager.h">
@@ -84,6 +87,9 @@
       <Filter>FlyCamera</Filter>
     </ClInclude>
     <ClInclude Include="cLightManager.h">
+      <Filter>LightManager</Filter>
+    </ClInclude>
+    <ClInclude Include="cLightHelper\cLightHelper.h">
       <Filter>LightManager</Filter>
     </ClInclude>
   </ItemGroup>
