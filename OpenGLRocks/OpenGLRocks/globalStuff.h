@@ -31,3 +31,10 @@ extern cBasicFlyCamera* g_pFlyCamera;
 
 extern cLightManager* g_pLightManager;
 
+// The light we are modifying
+extern int g_selectedLightID; // = 0;
+
+// This will scan through the vector of meshes
+// Returns NULL if not found
+cMesh* g_pFindMeshByFriendlyName(std::string theNameToFind);
+

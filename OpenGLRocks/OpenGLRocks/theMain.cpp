@@ -44,6 +44,8 @@ glm::vec3 upAxis = glm::vec3(0.0f, +1.0f, 0.0f);
 // (declared in globalStuff.h)
 std::vector< cMesh* > g_vec_pModelsToDraw;
 
+int g_selectedLightID = 0;
+
 static void error_callback(int error, const char* description);
 
 static void key_callback(GLFWwindow* window,
@@ -70,6 +72,9 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 // These are in the mouse_keyboard_async.cpp file
 void handleMouseAsync(GLFWwindow* window);
 void handleKeyboardAsync(GLFWwindow* window);
+
+// In DrawMesh.cpp
+void DrawMesh(cMesh* pCurrentMesh, GLuint program);
 
 
 int main(void)
@@ -179,6 +184,7 @@ int main(void)
     pShuttle->scale = 1.0f / 200.0f;
     pShuttle->rotation.x = glm::radians<float>(-90.0f);
     pShuttle->diffuseRGB = glm::vec3(0.56f, 0.8f, 0.1f);
+    pShuttle->position.y = -3.0f;
     //
     pShuttle->specularHighlightColourRGB = glm::vec3(1.0f, 1.0f, 1.0f);
     pShuttle->specularPower = 1000.0f;
@@ -194,6 +200,25 @@ int main(void)
     pBunny2->position.y = 2.0f;
     pBunny2->scale = 2.5f;
     pBunny2->diffuseRGB = glm::vec3(0.6f, 0.1f, 0.7f);
+
+    // Light debug objects
+    //cMesh* pIsoshphere_flat_3div = new cMesh("Isoshphere_flat_3div_xyz_n_rgba_uv.ply");
+    cMesh* pIsoshphere_flat_3div = new cMesh("Isoshphere_smooth_inverted_normals_xyz_n_rgba_uv.ply");
+    pIsoshphere_flat_3div->diffuseRGB = glm::vec3(1.0f, 1.0f, 1.0f);
+    pIsoshphere_flat_3div->position = glm::vec3(0.0f);
+    pIsoshphere_flat_3div->bIsWireframe = true;
+    pIsoshphere_flat_3div->bIsVisible = false; // **********
+    pIsoshphere_flat_3div->friendlyName = "DebugSphere1";
+    ::g_vec_pModelsToDraw.push_back(pIsoshphere_flat_3div);
+
+    cMesh* pIsoshphere_flat_4div = new cMesh("Isoshphere_flat_4div_xyz_n_rgba_uv.ply");
+    pIsoshphere_flat_4div->diffuseRGB = glm::vec3(1.0f, 1.0f, 1.0f);
+    pIsoshphere_flat_4div->position = glm::vec3(0.0f);
+    pIsoshphere_flat_4div->bIsVisible = false;  // *************
+    pIsoshphere_flat_4div->friendlyName = "DebugSphere2";
+    ::g_vec_pModelsToDraw.push_back(pIsoshphere_flat_4div);
+       
+
 
     ::g_vec_pModelsToDraw.push_back( pMig );
     ::g_vec_pModelsToDraw.push_back( pShuttle );
@@ -293,142 +318,25 @@ int main(void)
 
             cMesh* pCurrentMesh = *it_pMesh;
 
-            // Anything to do with model is now inside a loop
-
- //           glm::mat4 mvp;
-
-            // The model matrix when set to the "identity" 
-            //  means it's just like it is in the file.
-            glm::mat4 matModel = glm::mat4(1.0f);        // m          //mat4x4 m, p, mvp;
-
-            // Movement or placement 
-            //glm::mat4 matTranslate = glm::mat4(1.0f);
-            glm::mat4 matTranslate
-                = glm::translate( glm::mat4(1.0f), 
-                                  pCurrentMesh->position );
-                                                    
-            // Rotation
-            glm::mat4 matRotateX
-                = glm::rotate( glm::mat4(1.0f),
-                               pCurrentMesh->rotation.x,
-                               glm::vec3(1.0f, 0.0f, 0.0f) );
-
-            glm::mat4 matRotateY
-                = glm::rotate( glm::mat4(1.0f),
-                               pCurrentMesh->rotation.y,
-                               glm::vec3(0.0f, 1.0f, 0.0f) );
-
-            glm::mat4 matRotateZ 
-                = glm::rotate( glm::mat4(1.0f),
-                               pCurrentMesh->rotation.z,
-                               glm::vec3(0.0f, 0.0f, 1.0f) );
-
-            // Scaling
-            glm::mat4 matScaleXYZ
-                = glm::scale( glm::mat4(1.0f),
-                              glm::vec3( pCurrentMesh->scale,
-                                         pCurrentMesh->scale,
-                                         pCurrentMesh->scale) );
-
-
-            // Apply the scale matrix
-            matModel = matScaleXYZ * matModel;  // Last applied
-            // Apply the rotation matrices
-            matModel = matRotateX * matModel;
-            matModel = matRotateY * matModel;
-            matModel = matRotateZ * matModel;
-            // Apply the translation matrix
-            matModel = matTranslate * matModel; // 1st applied
-
-            // Copy the matModel to the shader, too
-            // uniform mat4 mModel;
-            GLint mModel_UL = glGetUniformLocation(program, "mModel");
-
-            glUniformMatrix4fv( mModel_UL, 1, GL_FALSE,
-                                (const GLfloat*)&matModel);
-
-
-            //mvp  -- pvm
-            // mvp = p * matView * m;
-            //mvp = matProjection * matView * matModel;
-
-            //glPointSize(6.0f);
-
-            // GL_LINE gives "wireframe"
-            // GL_FILL is default (solid or "filled" triangles)
-
-            glUseProgram(program);
-
-//            glUniformMatrix4fv( mvp_location, 
-//                                1, 
-//                                GL_FALSE, 
-//                                (const GLfloat*)&mvp);
-
-            //        glBindVertexArray(vertex_array);
-
-                    //glDrawArrays(GL_TRIANGLES, 0, 3);
-                    //glDrawArrays(GL_TRIANGLES, 0, ::g_NumberOfVertices);
-                    //glDrawArrays(GL_TRIANGLES, 0, ::g_NumberOfVerticesToDraw);
-                    //glDrawArrays(GL_TRIANGLES, 0, 0);
-
-            // Get the location of the colour variable in the shader
-            // uniform vec3 colourRGB;
-            GLint colourRGB_UL = glGetUniformLocation(program, "colourRGB");
-
-            glUniform3f( colourRGB_UL,
-                         pCurrentMesh->diffuseRGB.r,
-                         pCurrentMesh->diffuseRGB.g,
-                         pCurrentMesh->diffuseRGB.b);
-
-            // Copy specular also
-            //  uniform vec3 specularRGB;		// Colour of the highlight
-            //  uniform float specularPower;	// How "shiny" it is (1.0 to	0)
-
-            GLint specularRGB_UL = glGetUniformLocation(program, "specularRGB");
-            GLint specularPower_UL = glGetUniformLocation(program, "specularPower");
-
-            glUniform3f( specularRGB_UL, 
-                         pCurrentMesh->specularHighlightColourRGB.r, 
-                         pCurrentMesh->specularHighlightColourRGB.g, 
-                         pCurrentMesh->specularHighlightColourRGB.b );
-
-            glUniform1f(specularPower_UL, pCurrentMesh->specularPower);
-
-
-            if (pCurrentMesh->bIsWireframe)
-            {
-                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-            }
-            else
-            {
-                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-            }
-
-            std::string modelToDraw = pCurrentMesh->modelName;
-
-            sModelDrawInfo theModelToDraw;
-            if (::g_pVAOManager->FindDrawInfoByModelName( modelToDraw,
-                                                          theModelToDraw))
-            {
-                glBindVertexArray(theModelToDraw.VAO_ID);
-
-                // Uses the index (element) buffer to look up
-                //  into the bound vertex buffer and sends those final
-                //  vertices to the vertex shader
-                glDrawElements(GL_TRIANGLES,
-                    theModelToDraw.numberOfIndices, // How many indices
-                    GL_UNSIGNED_INT,
-                    (void*)0);      // What index to start from
-
-                //disable VAO(and everything else)
-                glBindVertexArray(0);
-            }
+            DrawMesh(pCurrentMesh, program );
 
             // ENDOF: Drawing THIS model
             // ************************************************
-
-
         }//for ( std::vector<cMesh*>::iterator it_pMesh
+
+        
+        // Draw other stuff
+        cMesh* pDebugBall = ::g_pFindMeshByFriendlyName("DebugSphere1");
+        pDebugBall->bIsVisible = true;
+        pDebugBall->scale = 0.1f;
+
+        pDebugBall->position = ::g_pLightManager->myLights[::g_selectedLightID].position;
+
+        DrawMesh(pDebugBall, program);
+
+        pDebugBall->bIsVisible = false;
+
+
 		
         // Print out the camera's location
         std::stringstream ssWindowText;

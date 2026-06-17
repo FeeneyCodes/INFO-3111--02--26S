@@ -60,6 +60,9 @@
     <ClCompile Include="cLightManager.cpp">
       <Filter>LightManager</Filter>
     </ClCompile>
+    <ClCompile Include="DrawMesh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="cShaderManager\cShaderManager.h">

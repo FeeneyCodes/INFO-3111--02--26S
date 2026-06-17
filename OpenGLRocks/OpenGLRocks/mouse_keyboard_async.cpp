@@ -90,19 +90,44 @@ void handleKeyboardAsync(GLFWwindow* window)
     const float CAMERA_MOVE_SPEED = 5.0f;
     const float CAMERA_TURN_SPEED = 1.0f;
 
+    const float LIGHT_MOVE_SPEED = 0.01f;
+
     if ( isShiftDown(window) )
     {
-        // Keys move the target
-    }
+        // Alter the "selected light"
+        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        {
+            ::g_pLightManager->myLights[::g_selectedLightID].position.z += LIGHT_MOVE_SPEED;
+        }
+        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        {
+            ::g_pLightManager->myLights[::g_selectedLightID].position.z -= LIGHT_MOVE_SPEED;
+        }
+        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        {
+            ::g_pLightManager->myLights[::g_selectedLightID].position.x += LIGHT_MOVE_SPEED;
+        }
+        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        {
+            ::g_pLightManager->myLights[::g_selectedLightID].position.x -= LIGHT_MOVE_SPEED;
+        }
+        if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+        {
+            ::g_pLightManager->myLights[::g_selectedLightID].position.y += LIGHT_MOVE_SPEED;
+        }
+        if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+        {
+            ::g_pLightManager->myLights[::g_selectedLightID].position.y -= LIGHT_MOVE_SPEED;
+        }
+    }//if ( isShiftDown(window) )
+
+
+
 
     if (areAllModifiersUp(window))
     {
-
-        // Move the camera 
         if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
         {
-            // Go forward
-//            ::g_cameraEye.z -= CAMERA_MOVE_SPEED;
             ::g_pFlyCamera->moveForward( CAMERA_MOVE_SPEED );
         }
 

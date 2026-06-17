@@ -25,6 +25,10 @@ public:
 	// 10,000 = very shiny
 	float specularPower = 1.0f;
 
+	// This is our user defined name (and is optional)
+	std::string friendlyName = "";
+
+	bool bIsVisible = true;
 
 	bool bIsWireframe = false;
 	// 
