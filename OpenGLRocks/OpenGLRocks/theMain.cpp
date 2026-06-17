@@ -29,12 +29,16 @@
 
 #include "globalStuff.h"
 
+#include "cLightHelper/cLightHelper.h"
+
 cShaderManager* g_pShaderManager = NULL;
 cVAOManager* g_pVAOManager = NULL;
 
 cBasicFlyCamera* g_pFlyCamera = NULL;
 
 cLightManager* g_pLightManager = NULL;
+
+bool g_bDrawDebugLightBalls = true;
 
 //glm::vec3 eyePosition = glm::vec3(0.0f, 0.0f, -10.0f);
 //glm::vec3 atPosition = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -340,17 +344,79 @@ int main(void)
         }//for ( std::vector<cMesh*>::iterator it_pMesh
 
         
-        // Draw other stuff
-        cMesh* pDebugBall = ::g_pFindMeshByFriendlyName("DebugSphere1");
-        pDebugBall->bIsVisible = true;
-        pDebugBall->scale = 0.1f;
+        if (::g_bDrawDebugLightBalls)
+        {
 
-        pDebugBall->position = ::g_pLightManager->myLights[::g_selectedLightID].position;
 
-        DrawMesh(pDebugBall, program);
+            // Draw other stuff
+            cMesh* pDebugBall = ::g_pFindMeshByFriendlyName("DebugSphere1");
+            pDebugBall->bIsVisible = true;
 
-        pDebugBall->bIsVisible = false;
+            // Draw a small white ball where the light is
+            pDebugBall->position = ::g_pLightManager->myLights[::g_selectedLightID].position;
+            pDebugBall->diffuseRGB = glm::vec3(1.0f, 1.0f, 1.0f);
+            pDebugBall->scale = 0.1f;
+            DrawMesh(pDebugBall, program);
 
+            cLightHelper myLightHelper;
+            // Draw a sphere at 75% brightness
+            float distance75percent = myLightHelper.calcApproxDistFromAtten(
+                0.75f,   // Target brighness
+                0.01f,   // Accuracy
+                100000.0f,   // Infinitely far from the light
+                ::g_pLightManager->myLights[::g_selectedLightID].attenuationConstant,
+                ::g_pLightManager->myLights[::g_selectedLightID].attenuationLinear,
+                ::g_pLightManager->myLights[::g_selectedLightID].attenuationQuadratic);
+            // 
+            pDebugBall->scale = distance75percent;
+            pDebugBall->diffuseRGB = glm::vec3(1.0f, 0.0f, 0.0f);
+            DrawMesh(pDebugBall, program);
+
+
+
+            // at 50% brightness
+            float distance50percent = myLightHelper.calcApproxDistFromAtten(
+                0.50f,   // Target brighness
+                0.01f,   // Accuracy
+                100000.0f,   // Infinitely far from the light
+                ::g_pLightManager->myLights[::g_selectedLightID].attenuationConstant,
+                ::g_pLightManager->myLights[::g_selectedLightID].attenuationLinear,
+                ::g_pLightManager->myLights[::g_selectedLightID].attenuationQuadratic);
+            // 
+            pDebugBall->scale = distance50percent;
+            pDebugBall->diffuseRGB = glm::vec3(0.0f, 1.0f, 0.0f);
+            DrawMesh(pDebugBall, program);
+
+            // at 25% brightness
+            float distance25percent = myLightHelper.calcApproxDistFromAtten(
+                0.25f,   // Target brighness
+                0.01f,   // Accuracy
+                100000.0f,   // Infinitely far from the light
+                ::g_pLightManager->myLights[::g_selectedLightID].attenuationConstant,
+                ::g_pLightManager->myLights[::g_selectedLightID].attenuationLinear,
+                ::g_pLightManager->myLights[::g_selectedLightID].attenuationQuadratic);
+            // 
+            pDebugBall->scale = distance25percent;
+            pDebugBall->diffuseRGB = glm::vec3(0.0f, 1.0f, 0.0f);
+            DrawMesh(pDebugBall, program);
+
+            // at 2% brightness (basically where it stops lighting, black)
+            float distance2percent = myLightHelper.calcApproxDistFromAtten(
+                0.02f,   // Target brighness
+                0.01f,   // Accuracy
+                100000.0f,   // Infinitely far from the light
+                ::g_pLightManager->myLights[::g_selectedLightID].attenuationConstant,
+                ::g_pLightManager->myLights[::g_selectedLightID].attenuationLinear,
+                ::g_pLightManager->myLights[::g_selectedLightID].attenuationQuadratic);
+            // 
+            pDebugBall->scale = distance2percent;
+            pDebugBall->diffuseRGB = glm::vec3(0.0f, 0.0f, 1.0f);
+            DrawMesh(pDebugBall, program);
+
+
+
+            pDebugBall->bIsVisible = false;
+        }
 
 		
         // Print out the camera's location
@@ -362,6 +428,15 @@ int main(void)
             << eyePosition.x << ", "
             << eyePosition.y << ", "
             << eyePosition.z;
+
+        // Light info as well
+        ssWindowText << " Light[" << ::g_selectedLightID << "]: "
+            << ::g_pLightManager->myLights[::g_selectedLightID].position.x << ", "
+            << ::g_pLightManager->myLights[::g_selectedLightID].position.y << ", "
+            << ::g_pLightManager->myLights[::g_selectedLightID].position.z << "  "
+            << "lin: " << ::g_pLightManager->myLights[::g_selectedLightID].attenuationLinear << " "
+            << "quad: " << ::g_pLightManager->myLights[::g_selectedLightID].attenuationQuadratic;
+
 
         glfwSetWindowTitle( window, ssWindowText.str().c_str() );
 
@@ -404,6 +479,20 @@ static void key_callback(GLFWwindow* window,
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
     {
         glfwSetWindowShouldClose(window, GLFW_TRUE);
+    }
+
+    // Shift (and only shift) down
+    if (mods && GLFW_MOD_SHIFT == GLFW_MOD_SHIFT)
+    {
+
+        if (key == GLFW_KEY_9 && action == GLFW_PRESS)
+        {
+            ::g_bDrawDebugLightBalls = true;
+        }
+        if (key == GLFW_KEY_0 && action == GLFW_PRESS)
+        {
+            ::g_bDrawDebugLightBalls = false;
+        }
     }
 
     //if (key == GLFW_KEY_UP && action == GLFW_PRESS)

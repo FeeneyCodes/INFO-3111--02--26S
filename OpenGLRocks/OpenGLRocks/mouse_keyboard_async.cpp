@@ -10,6 +10,8 @@
 
 //extern glm::vec3 g_cameraEye;
 
+extern bool g_bDrawDebugLightBalls;
+
 struct sMouseState
 {
     glm::ivec2 currentPositionXY = glm::ivec2(0, 0);
@@ -95,6 +97,36 @@ void handleKeyboardAsync(GLFWwindow* window)
     if ( isShiftDown(window) )
     {
         // Alter the "selected light"
+
+        // Change the "attenuation" of the light
+        if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
+        {
+            // LOWER the linear attenuation (drop by 1%)
+            ::g_pLightManager->myLights[::g_selectedLightID].attenuationLinear *= 0.99f;
+        }
+        if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
+        {
+            // INCREASE the linear attenuation (by 1%)
+            ::g_pLightManager->myLights[::g_selectedLightID].attenuationLinear *= 1.01f;
+        }
+
+
+        if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
+        {
+            // LOWER the quadratic attenuation (drop by 0.1%)
+            ::g_pLightManager->myLights[::g_selectedLightID].attenuationQuadratic *= 0.999f;
+        }
+        if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS)
+        {
+            // INCREASE the linear attenuation (by 0.1%)
+            ::g_pLightManager->myLights[::g_selectedLightID].attenuationQuadratic *= 1.001f;
+        }
+
+
+
+
+
+
         if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
         {
             ::g_pLightManager->myLights[::g_selectedLightID].position.z += LIGHT_MOVE_SPEED;
