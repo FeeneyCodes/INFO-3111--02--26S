@@ -13,7 +13,7 @@ out vec4 fragment;
 uniform vec3 colourRGB;
 uniform vec3 specularRGB;		// Colour of the highlight
 uniform float specularPower;	// How "shiny" it is (1.0 to	0)
-// Added after class 
+// This is set true for wireframe objects
 // (note that "bool" is really a float)
 // (values of 0.0 or NOT 0.0, usually just 1.0)
 uniform bool bDoNotLight;
