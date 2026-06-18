@@ -31,6 +31,9 @@ public:
 	bool bIsVisible = true;
 
 	bool bIsWireframe = false;
+	// If true, then the lighting calculation ISN'T done.
+	// (this is useful for wireframe objects)
+	bool bDoNotLight = false;
 	// 
 	float alphaTransparency = 1.0f;
 	static const unsigned int NUM_TEXTURES = 8;

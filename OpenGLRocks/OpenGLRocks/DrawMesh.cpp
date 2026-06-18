@@ -96,6 +96,22 @@ void DrawMesh( cMesh* pCurrentMesh,
 
     glUniform1f(specularPower_UL, pCurrentMesh->specularPower);
 
+    // For wireframe objects we might not want them to be seen 
+    //  regardless of the lighting
+    // uniform bool bDoNotLight;
+    GLint bDoNotLight_UL = glGetUniformLocation(program, "bDoNotLight");
+    // There is no "bool" (just like C and C++ in fact).
+    // in GLSL, it's a float that's either 0.0f (FALSE or GL_FALSE)
+    //  or NOT zero (often 1.0f) which is TRUE (or GL_TRUE)
+    if (pCurrentMesh->bDoNotLight)
+    {
+        glUniform1f(bDoNotLight_UL, (GLfloat)GL_TRUE);
+    }
+    else
+    {
+        glUniform1f(bDoNotLight_UL, (GLfloat)GL_FALSE);
+    }
+
 
     if (pCurrentMesh->bIsWireframe)
     {

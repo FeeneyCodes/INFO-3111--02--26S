@@ -13,6 +13,10 @@ out vec4 fragment;
 uniform vec3 colourRGB;
 uniform vec3 specularRGB;		// Colour of the highlight
 uniform float specularPower;	// How "shiny" it is (1.0 to	0)
+// Added after class 
+// (note that "bool" is really a float)
+// (values of 0.0 or NOT 0.0, usually just 1.0)
+uniform bool bDoNotLight;
 
 uniform vec3 eyeLocation;
 
@@ -54,11 +58,20 @@ void main()
 	//float vertexSpecPower = 1.0f;  // from 1 to 100,000
 	vec4 vertexSpecular = vec4(specularRGB, specularPower);
 		
-	fragment = calcualteLightContrib( theColour, 
-	                                  vNormal.xyz, 
-									  vWorldPosition.xyz, 
-									  vertexSpecular);
-
+	if (bDoNotLight)
+	{
+		// This is for wireframe objects, so not impacted by light (or darkness)
+		fragment.rgb = theColour;
+		fragment.a = 1.0f;	// not transparent
+	}
+	else
+	{
+		// Normal "is lit" state
+		fragment = calcualteLightContrib( theColour, 
+										  vNormal.xyz, 
+										  vWorldPosition.xyz, 
+										  vertexSpecular);
+	}//if (bDoNotLight)
 
 }
 

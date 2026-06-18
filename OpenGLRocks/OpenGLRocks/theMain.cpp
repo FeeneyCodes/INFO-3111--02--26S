@@ -351,10 +351,11 @@ int main(void)
             // Draw other stuff
             cMesh* pDebugBall = ::g_pFindMeshByFriendlyName("DebugSphere1");
             pDebugBall->bIsVisible = true;
+            pDebugBall->bDoNotLight = true;
 
             // Draw a small white ball where the light is
             pDebugBall->position = ::g_pLightManager->myLights[::g_selectedLightID].position;
-            pDebugBall->diffuseRGB = glm::vec3(1.0f, 1.0f, 1.0f);
+            pDebugBall->diffuseRGB = glm::vec3(1.0f, 1.0f, 1.0f);   // WHITE
             pDebugBall->scale = 0.1f;
             DrawMesh(pDebugBall, program);
 
@@ -369,7 +370,7 @@ int main(void)
                 ::g_pLightManager->myLights[::g_selectedLightID].attenuationQuadratic);
             // 
             pDebugBall->scale = distance75percent;
-            pDebugBall->diffuseRGB = glm::vec3(1.0f, 0.0f, 0.0f);
+            pDebugBall->diffuseRGB = glm::vec3(1.0f, 1.0f, 0.0f);   // YELLOW
             DrawMesh(pDebugBall, program);
 
 
@@ -384,7 +385,7 @@ int main(void)
                 ::g_pLightManager->myLights[::g_selectedLightID].attenuationQuadratic);
             // 
             pDebugBall->scale = distance50percent;
-            pDebugBall->diffuseRGB = glm::vec3(0.0f, 1.0f, 0.0f);
+            pDebugBall->diffuseRGB = glm::vec3(1.0f, 0.0f, 0.0f);   // RED
             DrawMesh(pDebugBall, program);
 
             // at 25% brightness
@@ -397,8 +398,22 @@ int main(void)
                 ::g_pLightManager->myLights[::g_selectedLightID].attenuationQuadratic);
             // 
             pDebugBall->scale = distance25percent;
-            pDebugBall->diffuseRGB = glm::vec3(0.0f, 1.0f, 0.0f);
+            pDebugBall->diffuseRGB = glm::vec3(0.0f, 1.0f, 0.0f);   // GREEN
             DrawMesh(pDebugBall, program);
+
+            // at 10% brightness
+            float distance10percent = myLightHelper.calcApproxDistFromAtten(
+                0.10f,   // Target brighness
+                0.01f,   // Accuracy
+                100000.0f,   // Infinitely far from the light
+                ::g_pLightManager->myLights[::g_selectedLightID].attenuationConstant,
+                ::g_pLightManager->myLights[::g_selectedLightID].attenuationLinear,
+                ::g_pLightManager->myLights[::g_selectedLightID].attenuationQuadratic);
+            // 
+            pDebugBall->scale = distance10percent;
+            pDebugBall->diffuseRGB = glm::vec3(0.0f, 1.0f, 1.0f);   // CYAN (light blue)
+            DrawMesh(pDebugBall, program);
+
 
             // at 2% brightness (basically where it stops lighting, black)
             float distance2percent = myLightHelper.calcApproxDistFromAtten(
@@ -410,7 +425,7 @@ int main(void)
                 ::g_pLightManager->myLights[::g_selectedLightID].attenuationQuadratic);
             // 
             pDebugBall->scale = distance2percent;
-            pDebugBall->diffuseRGB = glm::vec3(0.0f, 0.0f, 1.0f);
+            pDebugBall->diffuseRGB = glm::vec3(0.0f, 0.2f, 1.0f);   // Purple-BLUE (Pure BLUE is hard to see)
             DrawMesh(pDebugBall, program);
 
 
