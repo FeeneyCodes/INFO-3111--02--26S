@@ -255,25 +255,56 @@ int main(void)
 
     ::g_pLightManager->SetUpUniformShaderLocations(program);
 
-    ::g_pLightManager->myLights[0].bIsOn = true;
-    // Just above the origin
-    ::g_pLightManager->myLights[0].position = glm::vec3(0.0f, 20.0f, 0.0f);
-    // Light is white coloured
-    ::g_pLightManager->myLights[0].diffuseRGBA = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-    // 
-    ::g_pLightManager->myLights[0].lightType = sLight::POINT_LIGHT;
+    //::g_pLightManager->myLights[0].bIsOn = true;
+    //// Just above the origin
+    //::g_pLightManager->myLights[0].position = glm::vec3(0.0f, 20.0f, 0.0f);
+    //// Light is white coloured
+    //::g_pLightManager->myLights[0].diffuseRGBA = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+    //// 
+    //::g_pLightManager->myLights[0].lightType = sLight::POINT_LIGHT;
 
-    ::g_pLightManager->myLights[0].attenuationConstant = 0.0f;
-    ::g_pLightManager->myLights[0].attenuationLinear = 0.01f;
-    ::g_pLightManager->myLights[0].attenuationQuadratic = 0.001f;
+    //::g_pLightManager->myLights[0].attenuationConstant = 0.0f;
+    //::g_pLightManager->myLights[0].attenuationLinear = 0.01f;
+    //::g_pLightManager->myLights[0].attenuationQuadratic = 0.001f;
 
+        // Setting up spot light
+    sLight* pSpotLight = &(::g_pLightManager->myLights[0]);
+    pSpotLight->lightType = sLight::SPOT_LIGHT;
+    pSpotLight->bIsOn = true;
+    pSpotLight->position = glm::vec3(0.0f, 20.0f, 0.0f);
+    pSpotLight->direction = glm::vec3(0.0f, -1.0f, 0.0f);
+    // NEVER FORGET TO NORMALIZE DIRECTION
+    pSpotLight->direction = glm::normalize(pSpotLight->direction);
+    pSpotLight->diffuseRGBA = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 
+    pSpotLight->attenuationConstant = 0.1f;
+    pSpotLight->attenuationLinear = 0.01f;
+    pSpotLight->attenuationQuadratic = 0.001f;
+
+    // Cone angles
+    pSpotLight->spotInnerAngle = 15.0f;	// Degrees
+    pSpotLight->spotOuterAngle = 45.0f;
+
+    sLight* pFlashLight = &(::g_pLightManager->myLights[1]);
+    pFlashLight->lightType = sLight::SPOT_LIGHT;
+    pFlashLight->bIsOn = true;
 
 
 //    const GLint mvp_location = glGetUniformLocation(program, "MVP");
  
     while (!glfwWindowShouldClose(window))
     {
+        pFlashLight->position = g_pFlyCamera->getEyeLocation();
+
+        glm::vec3 cameraLookAt = g_pFlyCamera->getTargetLocation();
+        glm::vec3 cameraDirection = cameraLookAt - g_pFlyCamera->getEyeLocation();
+        pFlashLight->direction = glm::normalize(cameraDirection);
+
+        pFlashLight->attenuationConstant = 0.1f;
+        pFlashLight->attenuationLinear = 0.01f;
+        pFlashLight->attenuationQuadratic = 0.001f;
+
+
         int width, height;
         glfwGetFramebufferSize(window, &width, &height);
         const float ratio = width / (float)height;

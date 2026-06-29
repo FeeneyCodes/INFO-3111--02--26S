@@ -151,6 +151,53 @@ void handleKeyboardAsync(GLFWwindow* window)
         {
             ::g_pLightManager->myLights[::g_selectedLightID].position.y -= LIGHT_MOVE_SPEED;
         }
+
+        if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS)
+        {
+            ::g_pLightManager->myLights[::g_selectedLightID].bIsOn = !::g_pLightManager->myLights[::g_selectedLightID].bIsOn;
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS)
+        {
+            // Increase spotlight inner angle
+            ::g_pLightManager->myLights[::g_selectedLightID].spotInnerAngle += 0.25f;
+
+            if (::g_pLightManager->myLights[::g_selectedLightID].spotInnerAngle > 90.0f)
+            {
+                ::g_pLightManager->myLights[::g_selectedLightID].spotInnerAngle = 90.0f;
+            }
+
+
+            if (::g_pLightManager->myLights[::g_selectedLightID].spotInnerAngle > ::g_pLightManager->myLights[::g_selectedLightID].spotOuterAngle)
+            {
+                ::g_pLightManager->myLights[::g_selectedLightID].spotOuterAngle = ::g_pLightManager->myLights[::g_selectedLightID].spotInnerAngle;
+            }
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_6) == GLFW_PRESS)
+        {
+            // Decrease spotlight inner angle
+            ::g_pLightManager->myLights[::g_selectedLightID].spotInnerAngle -= 0.25f;
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_7) == GLFW_PRESS)
+        {
+            // Increase spotlight outer angle
+            ::g_pLightManager->myLights[::g_selectedLightID].spotOuterAngle += 0.25f;
+
+            if (::g_pLightManager->myLights[::g_selectedLightID].spotOuterAngle > 90.0f)
+            {
+                ::g_pLightManager->myLights[::g_selectedLightID].spotOuterAngle = 90.0f;
+            }
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_8) == GLFW_PRESS)
+        {
+            // Decrease spotlight outer angle
+            ::g_pLightManager->myLights[::g_selectedLightID].spotOuterAngle -= 0.25f;
+        }
+
+
     }//if ( isShiftDown(window) )
 
 
