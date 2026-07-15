@@ -80,6 +80,11 @@ void handleKeyboardAsync(GLFWwindow* window);
 // In DrawMesh.cpp
 void DrawMesh(cMesh* pCurrentMesh, GLuint program);
 
+float getRand(void)
+{
+    return ((float)rand()) / RAND_MAX;
+}
+
 
 int main(void)
 {
@@ -290,6 +295,22 @@ int main(void)
     pFlashLight->bIsOn = true;
 
 
+
+    for (float z = -100.0f; z < 101.0f; z += 10.0f)
+    {
+        cMesh* pShuttle = new cMesh("SpaceShuttleOrbiter_xyz_n_rgba_uv.ply");
+        pShuttle->position = glm::vec3(0.0f, 0.0f, z);
+        pShuttle->scale = 1.0f / 200.0f;
+        pShuttle->diffuseRGB = glm::vec3(getRand(), getRand(), getRand());
+        pShuttle->alphaTransparency = 0.6f;
+
+        ::g_vec_pModelsToDraw.push_back(pShuttle);
+    }
+
+    // Enable blending
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 //    const GLint mvp_location = glGetUniformLocation(program, "MVP");
  
     while (!glfwWindowShouldClose(window))
@@ -358,9 +379,32 @@ int main(void)
                     theEyeLocation.x, theEyeLocation.y, theEyeLocation.z);
 
 
+        std::vector< cMesh* > vec_transparentMeshes;
+        std::vector< cMesh* > vec_SolidMeshes;
 
-        for ( std::vector< cMesh* >::iterator it_pMesh = ::g_vec_pModelsToDraw.begin();
-              it_pMesh != ::g_vec_pModelsToDraw.end();
+        for (std::vector< cMesh* >::iterator it_pMesh = ::g_vec_pModelsToDraw.begin();
+            it_pMesh != ::g_vec_pModelsToDraw.end();
+            it_pMesh++)
+        {
+            cMesh* pCurrentMesh = *it_pMesh;
+
+
+            if (pCurrentMesh->alphaTransparency < 1.0f)
+            {
+                vec_transparentMeshes.push_back(pCurrentMesh);
+            }
+            else
+            {
+                vec_SolidMeshes.push_back(pCurrentMesh);
+            }
+
+            
+        }//for ( std::vector<cMesh*>::iterator it_pMesh
+
+
+         // Now draw all the solid objects first
+        for ( std::vector< cMesh* >::iterator it_pMesh = vec_SolidMeshes.begin();
+              it_pMesh != vec_SolidMeshes.end();
               it_pMesh++)
         {
             // *******************************************************
@@ -373,6 +417,21 @@ int main(void)
             // ENDOF: Drawing THIS model
             // ************************************************
         }//for ( std::vector<cMesh*>::iterator it_pMesh
+
+         // Now, sort the transparent meshes by distance from camera
+        // TODO: Sort transparent object from farthest to closest to camera
+
+
+        // Draw all trasnparent meshes, they now should be sorted
+        for (std::vector<cMesh*>::iterator it_pMesh = vec_transparentMeshes.begin();
+            it_pMesh != vec_transparentMeshes.end();
+            it_pMesh++)
+        {
+
+            cMesh* pTheMesh = *it_pMesh;
+
+            DrawMesh(pTheMesh, program);
+        }
 
         
         if (::g_bDrawDebugLightBalls)

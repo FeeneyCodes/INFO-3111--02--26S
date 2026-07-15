@@ -89,6 +89,10 @@ void DrawMesh( cMesh* pCurrentMesh,
     GLint specularRGB_UL = glGetUniformLocation(program, "specularRGB");
     GLint specularPower_UL = glGetUniformLocation(program, "specularPower");
 
+    GLint alpha_UL = glGetUniformLocation(program, "alphaTransparency");
+
+    glUniform1f(alpha_UL, pCurrentMesh->alphaTransparency);
+
     glUniform3f(specularRGB_UL,
         pCurrentMesh->specularHighlightColourRGB.r,
         pCurrentMesh->specularHighlightColourRGB.g,

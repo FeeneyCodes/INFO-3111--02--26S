@@ -20,6 +20,8 @@ uniform bool bDoNotLight;
 
 uniform vec3 eyeLocation;
 
+uniform float alphaTransparency;
+
 const float POINT_LIGHT_TYPE = 0;
 const float SPOT_LIGHT_TYPE = 1;
 const float DIRECTIONAL_LIGHT_TYPE = 2;
@@ -218,7 +220,7 @@ vec4 calcualteLightContrib( vec3 vertexMaterialColour, vec3 vertexNormal,
 		finalObjectColour.rgb += (vertexMaterialColour.rgb * lightDiffuseContrib.rgb)
 								  + (vertexSpecular.rgb * lightSpecularContrib.rgb );
 	}//for(intindex=0...
-	finalObjectColour.a = 1.0f;
+	finalObjectColour.a = alphaTransparency;
 	
 	return finalObjectColour;
 }
