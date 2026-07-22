@@ -22,6 +22,10 @@ uniform vec3 eyeLocation;
 
 uniform float alphaTransparency;
 
+// Texture uniforms
+uniform sampler2D texture0; // the texture image
+uniform bool bUseTexture; // should we use the texture or not
+
 const float POINT_LIGHT_TYPE = 0;
 const float SPOT_LIGHT_TYPE = 1;
 const float DIRECTIONAL_LIGHT_TYPE = 2;
@@ -59,6 +63,14 @@ void main()
 	
 	//float vertexSpecPower = 1.0f;  // from 1 to 100,000
 	vec4 vertexSpecular = vec4(specularRGB, specularPower);
+
+	
+	// Apply texture if we are using it
+	if (bUseTexture)
+	{
+		vec4 textureColour = texture(texture0, vVertexUVx2.xy);
+		theColour = textureColour.rgb;
+	}
 		
 	if (bDoNotLight)
 	{

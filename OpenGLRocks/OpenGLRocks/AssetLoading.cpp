@@ -57,7 +57,6 @@ void LoadTheModels(cVAOManager* pVAOManager, unsigned int shaderProgramID)
         Isoshphere_smooth_inverted_normals_ModelInfo, shaderProgramID, true, true, true );
 
 
-
     sModelDrawInfo WarehouseModelInfo;
     pVAOManager->LoadModelIntoVAO("Warehouse_xyz_n_rgba_UV (Blender Smart UV project).ply", 
         WarehouseModelInfo, shaderProgramID, true, true, true );

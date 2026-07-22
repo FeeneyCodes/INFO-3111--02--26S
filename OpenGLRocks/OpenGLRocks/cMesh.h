@@ -36,9 +36,12 @@ public:
 	bool bDoNotLight = false;
 	// 
 	float alphaTransparency = 1.0f;
-	static const unsigned int NUM_TEXTURES = 8;
-	std::string textures[NUM_TEXTURES];
-	float textureBlendRatio[NUM_TEXTURES];
+
+	bool bUseTexture = false;
+	std::string textureName = "";
+	//static const unsigned int NUM_TEXTURES = 8;
+	//std::string textures[NUM_TEXTURES];
+	//float textureBlendRatio[NUM_TEXTURES];
 
 	// Child objects (maybe later)
 	std::vector< cMesh*> m_vec_pChildMeshes;

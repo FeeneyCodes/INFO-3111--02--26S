@@ -16,6 +16,7 @@
 #include "cMesh.h"
 #include <vector>
 #include "cBasicFlyCamera/cBasicFlyCamera.h"
+#include "cBasicTextureManager/cBasicTextureManager.h"
 #include "cLightManager.h"
 
 
@@ -30,6 +31,8 @@ extern std::vector< cMesh* > g_vec_pModelsToDraw;
 extern cBasicFlyCamera* g_pFlyCamera;
 
 extern cLightManager* g_pLightManager;
+
+extern cBasicTextureManager* g_pTextureManager;
 
 // The light we are modifying
 extern int g_selectedLightID; // = 0;

@@ -38,6 +38,8 @@ cBasicFlyCamera* g_pFlyCamera = NULL;
 
 cLightManager* g_pLightManager = NULL;
 
+cBasicTextureManager* g_pTextureManager = NULL;
+
 bool g_bDrawDebugLightBalls = true;
 
 //glm::vec3 eyePosition = glm::vec3(0.0f, 0.0f, -10.0f);
@@ -155,16 +157,42 @@ int main(void)
 
     glUseProgram(program);
 
+    GLint texture0_UL = glGetUniformLocation(program, "texture0");
+    GLint bUseTexture_UL = glGetUniformLocation(program, "bUseTexture");
+
+    // bind the texture to texture unit 0 (do this once)
+    glUniform1i(texture0_UL, 0);	// Texture unit 0)
+
+    // create texture manager
+    ::g_pTextureManager = new cBasicTextureManager();
+    ::g_pTextureManager->SetBasePath("assets/textures");
+
+    bool success = g_pTextureManager->Create2DTextureFromBMPFile("Dungeons_2_Texture_01_A.bmp", true);
+
+    if (success)
+    {
+        std::cout << "Loaded the texture OK" << std::endl;
+        GLuint testID = g_pTextureManager->getTextureIDFromName("Dungeons_2_Texture_01_A.bmp");
+        std::cout << "Texture ID: " << testID << std::endl;  // Should be non-zero
+    }
+    else
+    {
+        std::cout << "Didn't load the texture" << std::endl;
+    }
+
     // The VAO manager (to load the models)
     ::g_pVAOManager = new cVAOManager();
 
     LoadTheModels(::g_pVAOManager, program);
 
-    // Add some models to draw...
+    //// Add some models to draw...
     cMesh* pDeadDwarf = new cMesh("SM_Prop_DeadBody_Dwarf_01.ply");
     //pDeadDwarf->bIsWireframe = true;
     pDeadDwarf->scale = 0.1f;
-    pDeadDwarf->position.z = 50.0f;
+    pDeadDwarf->position.z = 0.0f;
+    pDeadDwarf->bUseTexture = true;
+    pDeadDwarf->textureName = "Dungeons_2_Texture_01_A.bmp";
+    pDeadDwarf->bDoNotLight = true;
     ::g_vec_pModelsToDraw.push_back(pDeadDwarf);
 
     //cMesh* pTerrain = new cMesh("Terrain_xyz_n.ply");
@@ -241,13 +269,10 @@ int main(void)
     ::g_vec_pModelsToDraw.push_back(pWarehouse);
 
 
-
-
-
-    ::g_vec_pModelsToDraw.push_back( pMig );
-    ::g_vec_pModelsToDraw.push_back( pShuttle );
-    ::g_vec_pModelsToDraw.push_back(pBunny);
-    ::g_vec_pModelsToDraw.push_back(pBunny2);
+    //::g_vec_pModelsToDraw.push_back( pMig );
+    //::g_vec_pModelsToDraw.push_back( pShuttle );
+    //::g_vec_pModelsToDraw.push_back(pBunny);
+    //::g_vec_pModelsToDraw.push_back(pBunny2);
 
 
     // Create the fly camera
@@ -296,16 +321,16 @@ int main(void)
 
 
 
-    for (float z = -100.0f; z < 101.0f; z += 10.0f)
-    {
-        cMesh* pShuttle = new cMesh("SpaceShuttleOrbiter_xyz_n_rgba_uv.ply");
-        pShuttle->position = glm::vec3(0.0f, 0.0f, z);
-        pShuttle->scale = 1.0f / 200.0f;
-        pShuttle->diffuseRGB = glm::vec3(getRand(), getRand(), getRand());
-        pShuttle->alphaTransparency = 0.6f;
+    //for (float z = -100.0f; z < 101.0f; z += 10.0f)
+    //{
+    //    cMesh* pShuttle = new cMesh("SpaceShuttleOrbiter_xyz_n_rgba_uv.ply");
+    //    pShuttle->position = glm::vec3(0.0f, 0.0f, z);
+    //    pShuttle->scale = 1.0f / 200.0f;
+    //    pShuttle->diffuseRGB = glm::vec3(getRand(), getRand(), getRand());
+    //    pShuttle->alphaTransparency = 0.6f;
 
-        ::g_vec_pModelsToDraw.push_back(pShuttle);
-    }
+    //    ::g_vec_pModelsToDraw.push_back(pShuttle);
+    //}
 
     // Enable blending
     glEnable(GL_BLEND);
@@ -412,6 +437,31 @@ int main(void)
 
             cMesh* pCurrentMesh = *it_pMesh;
 
+            if (pCurrentMesh->bUseTexture && !pCurrentMesh->textureName.empty())
+            {
+                //get the textureID
+                GLuint textureID = ::g_pTextureManager->getTextureIDFromName(pCurrentMesh->textureName);
+
+                if (textureID != 0)
+                {
+                    // tell the shader to "use textues"
+                    glUniform1i(bUseTexture_UL, GL_TRUE);
+
+                    //bind the texture
+                    glActiveTexture(GL_TEXTURE0);
+                    glBindTexture(GL_TEXTURE_2D, textureID);
+                }
+                else
+                {
+                    // texture not foun, so use solid colour
+                    glUniform1i(bUseTexture_UL, GL_FALSE);
+                }
+            }
+            else
+            {
+                glUniform1i(bUseTexture_UL, GL_FALSE);
+            }
+
             DrawMesh(pCurrentMesh, program );
 
             // ENDOF: Drawing THIS model
@@ -428,9 +478,34 @@ int main(void)
             it_pMesh++)
         {
 
-            cMesh* pTheMesh = *it_pMesh;
+            cMesh* pCurrentMesh = *it_pMesh;
 
-            DrawMesh(pTheMesh, program);
+            if (pCurrentMesh->bUseTexture && !pCurrentMesh->textureName.empty())
+            {
+                //get the textureID
+                GLuint textureID = ::g_pTextureManager->getTextureIDFromName(pCurrentMesh->textureName);
+
+                if (textureID != 0)
+                {
+                    // tell the shader to "use textues"
+                    glUniform1i(bUseTexture_UL, GL_TRUE);
+
+                    //bind the texture
+                    glActiveTexture(GL_TEXTURE0);
+                    glBindTexture(GL_TEXTURE_2D, textureID);
+                }
+                else
+                {
+                    // texture not foun, so use solid colour
+                    glUniform1i(bUseTexture_UL, GL_FALSE);
+                }
+            }
+            else
+            {
+                glUniform1i(bUseTexture_UL, GL_FALSE);
+            }
+
+            DrawMesh(pCurrentMesh, program);
         }
 
         
