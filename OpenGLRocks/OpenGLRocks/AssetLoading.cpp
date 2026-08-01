@@ -61,6 +61,10 @@ void LoadTheModels(cVAOManager* pVAOManager, unsigned int shaderProgramID)
     pVAOManager->LoadModelIntoVAO("Warehouse_xyz_n_rgba_UV (Blender Smart UV project).ply", 
         WarehouseModelInfo, shaderProgramID, true, true, true );
 
+	sModelDrawInfo IsoSphereModelInfo;
+	pVAOManager->LoadModelIntoVAO("Isoshphere_smooth_xyz_n_rgba_uv.ply",
+		IsoSphereModelInfo, shaderProgramID, true, true, true);
+
 
     return;
 }

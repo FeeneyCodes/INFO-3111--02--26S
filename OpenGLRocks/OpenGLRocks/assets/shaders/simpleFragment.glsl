@@ -51,8 +51,25 @@ uniform sLight theLights[NUMBEROFLIGHTS];
 vec4 calcualteLightContrib( vec3 vertexMaterialColour, vec3 vertexNormal, 
                             vec3 vertexWorldPos, vec4 vertexSpecular );
 
+uniform bool bIsSkyBox;	// true if this is a skybox, false if not
+uniform samplerCube skyboxTexture;	// the skybox texture
+
 void main()
 {
+
+	if (bIsSkyBox)
+	{
+		// Sample using direction from eye to vertex
+		vec3 viewDirection = normalize(vWorldPosition.xyz - eyeLocation);
+		vec3 vertColour = texture(skyboxTexture, viewDirection).rgb;
+    
+		fragment.rgb = vertColour;
+		fragment.a = 1.0f;
+    
+		return;
+	}
+
+
 	//fragment = vec4(color, 1.0);
 //	vec3 theColour = vModelColour.rgb * 0.00001f;
 //	theColour.rgb += colourRGB.rgb;

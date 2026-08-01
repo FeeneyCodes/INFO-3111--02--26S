@@ -167,12 +167,12 @@ int main(void)
     ::g_pTextureManager = new cBasicTextureManager();
     ::g_pTextureManager->SetBasePath("assets/textures");
 
-    bool success = g_pTextureManager->Create2DTextureFromBMPFile("Dungeons_2_Texture_01_A.bmp", true);
+    bool success = ::g_pTextureManager->Create2DTextureFromBMPFile("Dungeons_2_Texture_01_A.bmp", true);
 
     if (success)
     {
         std::cout << "Loaded the texture OK" << std::endl;
-        GLuint testID = g_pTextureManager->getTextureIDFromName("Dungeons_2_Texture_01_A.bmp");
+        GLuint testID = ::g_pTextureManager->getTextureIDFromName("Dungeons_2_Texture_01_A.bmp");
         std::cout << "Texture ID: " << testID << std::endl;  // Should be non-zero
     }
     else
@@ -180,10 +180,30 @@ int main(void)
         std::cout << "Didn't load the texture" << std::endl;
     }
 
+    std::string errorMessage = "";
+	::g_pTextureManager->SetBasePath("assets/textures/cubeMaps");
+    if (!::g_pTextureManager->CreateCubeTextureFromBMPFiles("SunnyDay",
+        "TropicalSunnyDayRight2048.bmp", "TropicalSunnyDayLeft2048.bmp",
+        "TropicalSunnyDayUp2048.bmp", "TropicalSunnyDayDown2048.bmp",
+        "TropicalSunnyDayBack2048.bmp", "TropicalSunnyDayFront2048.bmp",
+        true, errorMessage))
+    {
+        std::cout << "Didn't load sunny day texture because: " << errorMessage << std::endl;
+    }
+
+
     // The VAO manager (to load the models)
     ::g_pVAOManager = new cVAOManager();
 
     LoadTheModels(::g_pVAOManager, program);
+
+	cMesh* pSkyBoxMesh = new cMesh("Isoshphere_smooth_xyz_n_rgba_uv.ply");
+    pSkyBoxMesh->scale = 500.0f;
+	pSkyBoxMesh->textureName = "SunnyDay";
+	pSkyBoxMesh->bUseTexture = true;
+    pSkyBoxMesh->bDoNotLight = true;
+    pSkyBoxMesh->bIsSkybox = true;
+    ::g_vec_pModelsToDraw.push_back(pSkyBoxMesh);
 
     //// Add some models to draw...
     cMesh* pDeadDwarf = new cMesh("SM_Prop_DeadBody_Dwarf_01.ply");
@@ -337,6 +357,8 @@ int main(void)
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 //    const GLint mvp_location = glGetUniformLocation(program, "MVP");
+
+
  
     while (!glfwWindowShouldClose(window))
     {
@@ -396,6 +418,7 @@ int main(void)
         // Copy light infor for this frame
         ::g_pLightManager->CopyLightInfoToShader(program);
 
+
         // Tell shader where the camera eye is (for specular)
         // uniform vec3 eyeLocation;
         GLint eyeLocation_UL = glGetUniformLocation(program, "eyeLocation");
@@ -437,6 +460,8 @@ int main(void)
 
             cMesh* pCurrentMesh = *it_pMesh;
 
+            GLint bIsSkyBoxLoc = glGetUniformLocation(program, "bIsSkyBox");
+
             if (pCurrentMesh->bUseTexture && !pCurrentMesh->textureName.empty())
             {
                 //get the textureID
@@ -446,20 +471,38 @@ int main(void)
                 {
                     // tell the shader to "use textues"
                     glUniform1i(bUseTexture_UL, GL_TRUE);
+                   
 
-                    //bind the texture
-                    glActiveTexture(GL_TEXTURE0);
-                    glBindTexture(GL_TEXTURE_2D, textureID);
+					if (pCurrentMesh->bIsSkybox)
+					{
+                        // Bind as cube map for skybox
+                        GLint skyboxLoc = glGetUniformLocation(program, "skyboxTexture");
+                     
+
+                        glUniform1i(bIsSkyBoxLoc, GL_TRUE);
+                        glActiveTexture(GL_TEXTURE1);  // Use texture unit 1 for skybox
+                        glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);  // <-- Use GL_TEXTURE_CUBE_MAP instead of GL_TEXTURE_2D
+                        glUniform1i(skyboxLoc, 1);  // Tell shader to use texture unit 
+					}
+                    else
+                    {
+                        glUniform1i(bIsSkyBoxLoc, GL_FALSE);
+                        // Bind as regular 2D texture
+                        glActiveTexture(GL_TEXTURE0);
+                        glBindTexture(GL_TEXTURE_2D, textureID);
+                    }  
                 }
                 else
                 {
                     // texture not foun, so use solid colour
                     glUniform1i(bUseTexture_UL, GL_FALSE);
+                    glUniform1i(bIsSkyBoxLoc, GL_FALSE);
                 }
             }
             else
             {
                 glUniform1i(bUseTexture_UL, GL_FALSE);
+                glUniform1i(bIsSkyBoxLoc, GL_FALSE);
             }
 
             DrawMesh(pCurrentMesh, program );

@@ -43,6 +43,8 @@ public:
 	//std::string textures[NUM_TEXTURES];
 	//float textureBlendRatio[NUM_TEXTURES];
 
+	bool bIsSkybox = false;
+
 	// Child objects (maybe later)
 	std::vector< cMesh*> m_vec_pChildMeshes;
 };
